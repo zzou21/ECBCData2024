@@ -1,5 +1,7 @@
 '''Counting how many times a word, or a selection of words, appears in selected EEBO documents. User could customize the code to process either a single txt file or a folder of txt files.
 
+Author: Jerry Zou
+
 Places in the code that's customizable:
 - Path name for single file processing -> go to main() method and change String variable "pathNameForSingleFile".
 - Path name for folder of files processing -> go to main() method and change String variable "pathNameForFolderOfFiles".

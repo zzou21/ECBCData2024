@@ -4,7 +4,7 @@ Author: Jerry Zou'''
 import json
 from datetime import datetime
 def interface(jsonPathName):
-    tagsList = []
+    newTagsAsSet = set()
     tagDictionaryReadyForJsonDump = {}
     time = datetime.now()
     timeAsDictKey = time.strftime("%Y-%m-%d %H:%M:%S")
@@ -16,12 +16,20 @@ def interface(jsonPathName):
         inputtedTag = userInput
         if inputtedTag == "exit":
             break
-        tagsList.append(inputtedTag)
+        newTagsAsSet.add(inputtedTag)
 
-    tagDictionaryReadyForJsonDump[timeAsDictKey] = tagsList
     with open(jsonPathName, "r") as file: existingTagsDictionary = json.load(file)
+
+    #This is to check for any repetitions:
+    newTagsList = list(newTagsAsSet)
+    for tagList in existingTagsDictionary.values():
+        for tag in tagList:
+            if tag in newTagsList:
+                newTagsList.remove(tag)
+
+    tagDictionaryReadyForJsonDump[timeAsDictKey] = newTagsList
     existingTagsDictionary.update(tagDictionaryReadyForJsonDump)
-    with open(jsonPathName, "w") as file: json.dump(existingTagsDictionary, file)
+    with open(jsonPathName, "w") as file: json.dump(existingTagsDictionary, file, indent=4)
 
 if __name__ == "__main__":
     print("---XML Tag Update Interface---")

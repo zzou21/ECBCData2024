@@ -1,4 +1,7 @@
-'''Counting how many times a word, or a selection of words, appears in selected EEBO documents. User could customize the code to process either a single txt file or a folder of txt files.
+'''
+CODE WRITTEN FOR TESTING PURPOSES. USE ONLY AS REFERENCE
+
+Counting how many times a word, or a selection of words, appears in selected EEBO documents. User could customize the code to process either a single txt file or a folder of txt files.
 
 Author: Jerry Zou
 

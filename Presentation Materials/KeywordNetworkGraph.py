@@ -47,12 +47,9 @@ for category, keywords in categories.items():
     for i, keyword in enumerate(keywords):
         if keyword not in pos:
             pos[keyword] = keyword_positions[f"node_{i}"]
-
-
-
-
-vertical_offset = 0.5  # Vertical spacing between shared keywords
-shared_keyword_y = {}  # Store y positions of shared keywords to avoid overlap
+            
+vertical_offset = 0.5 
+shared_keyword_y = {}
 
 for keyword, categories in keyword_categories.items():
     if len(categories) > 1:

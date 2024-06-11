@@ -1,0 +1,8 @@
+Python TensorFlow for Machine Learning – Neural Network Text Classification Tutorial:
+https://www.youtube.com/watch?v=VtRLrQ3Ev-U
+
+Text Classification Using BERT & Tensorflow | Deep Learning Tutorial 47 (Tensorflow, Keras & Python)
+https://www.youtube.com/watch?v=D9yyt6BfgAM
+
+Tensorflow tutorial (has good sample code):
+https://www.tensorflow.org/text/tutorials/classify_text_with_bert

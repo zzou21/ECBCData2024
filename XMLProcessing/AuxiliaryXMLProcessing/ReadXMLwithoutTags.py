@@ -3,12 +3,13 @@
 Author: Jerry Zou'''
 
 import xml.etree.ElementTree as ET
-import json, os, nltk
-from transformers import AutoTokenizer, AutoModelForTokenClassification
+import json, os
+# from transformers import AutoTokenizer, AutoModelForTokenClassification
 from nltk.tokenize.punkt import PunktSentenceTokenizer, PunktParameters
 
-def removeTags(file_path):
-    tree = ET.parse(file_path)
+def removeTags(folderPath):
+
+    tree = ET.parse( )
     root = tree.getroot()
 
     def extract_text(element):
@@ -51,10 +52,18 @@ def deleteReferences(jsonPath, text, dictionaryKey):
 
     return text
 
+def processFolderGeneral(folderPath, jsonPath):
+    for filename in os.listdir(folderPath):
+        if filename.endswith(".xml"):
+            file_path = os.path.join(folderPath, filename)
+            dictionaryKey = filename[:-4]
+            print(file_path)
+            print(dictionaryKey)
 
 JSONPath = "XMLProcessing/StoringItalicsAndLineNumber.json"
-XMLfilePath = "/Users/Jerry/Desktop/A0/A00002.P4.xml"
+XMLFolderPath = "/Users/Jerry/Desktop/BibleTrainingEEBOXML"
 dictionaryKey = "A00002.P4"
-textContent = removeTags(XMLfilePath)
-cleanedContent = cleaning(textContent)
-deleteReferences(JSONPath, cleanedContent, dictionaryKey)
+# textContent = removeTags(XMLFolderPath)
+# cleanedContent = cleaning(textContent)
+# deleteReferences(JSONPath, cleanedContent, dictionaryKey)
+processFolderGeneral(XMLFolderPath, JSONPath)

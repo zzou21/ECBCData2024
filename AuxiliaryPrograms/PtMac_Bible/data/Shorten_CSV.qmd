@@ -1,0 +1,34 @@
+This is a Quarto document used to create a much smaller dataset for the MacBERTh model to be trained on.
+
+Author: Lucas Ma
+
+```{r}
+# The easiest way to get dplyr is to install the whole tidyverse:
+# install.packages("tidyverse")
+
+# Alternatively, install just dplyr:
+# install.packages("dplyr")
+
+library(tidyverse)
+library(dplyr)
+```
+
+
+```{r}
+ds <- read.csv("genevaBible.csv")
+glimpse(ds)
+```
+
+The following chunk selects only top 5000 verses to be used for training.
+
+```{r}
+ds1 <- ds |>
+  slice_head(n=5000)
+
+glimpse(ds1)
+```
+
+```{r}
+ds1 |> write.csv("shortened_bible.csv")
+```
+

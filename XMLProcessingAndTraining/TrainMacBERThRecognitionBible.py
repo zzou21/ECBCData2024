@@ -11,9 +11,9 @@ from sklearn.model_selection import train_test_split
 from tqdm.auto import tqdm
 
 # csvFilePath = "/Users/Jerry/Desktop/GenevaBibleRecognitionDataSetUpdated.csv"
-csvFilePath = "/Users/Jerry/Desktop/SmallDataGenevaBibleRecognitionDataSetUpdated.csv"
+# csvFilePath = "/Users/Jerry/Desktop/SmallDataGenevaBibleRecognitionDataSetUpdated.csv"
 #When using DCC:
-# csvFilePath = "/hpc/group/datap2023ecbc/zz341/GenevaBibleRecognitionDataSetUpdated.csv"
+csvFilePath = "/hpc/group/datap2023ecbc/zz341/GenevaBibleRecognitionDataSetUpdated.csv"
 # csvFilePath = "/hpc/group/datap2023ecbc/zz341/SmallDataGenevaBibleRecognitionDataSetUpdated.csv"
 dataFrame = pd.read_csv(csvFilePath)
 
@@ -67,9 +67,9 @@ for epoch in range(num_epochs):
         optimizer.zero_grad()
         progress_bar.update(1)
 
-output_dir = '/Users/Jerry/Desktop'
+# output_dir = '/Users/Jerry/Desktop'
 # When using DCC:
-# output_dir = "/hpc/group/datap2023ecbc/zz341"
+output_dir = "/hpc/group/datap2023ecbc/zz341/finetunedBibleNonBible"
 model.save_pretrained(output_dir)
 tokenizer.save_pretrained(output_dir)
 

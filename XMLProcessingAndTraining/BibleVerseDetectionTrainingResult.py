@@ -1,7 +1,12 @@
+'''This file implements the Bible-Non-Bible Comparator fine-tuned MacBERTh to detect which verse is and is not Bible verse.
+
+Author: Jerry Zou'''
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
 
-traineModel = "/Users/Jerry/Desktop/BibleTestModel"
+# Import the trained model from wherever it is stored.
+traineModel = "/Users/Jerry/Desktop/testBibleModel"
+
 model = AutoModelForSequenceClassification.from_pretrained(traineModel)
 tokenizer = AutoTokenizer.from_pretrained(traineModel)
 
@@ -20,5 +25,6 @@ def is_bible_verse(sentence):
     label_mapping = {0: "Not a Bible Verse", 1: "Bible Verse"}  # Adjust based on your label definitions
     return label_mapping[prediction]
 
-exampleSentence = "In the beginning God created the heaven and the earth"
+#TO DO: update the input variable below so to take in a sequence of sentences to compare.
+exampleSentence = "We will fight them on the beaches."
 print(f"'{exampleSentence}' -> {is_bible_verse(exampleSentence)}")

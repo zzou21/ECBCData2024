@@ -1,30 +1,33 @@
 '''This file implements the Bible-Non-Bible Comparator fine-tuned MacBERTh to detect which verse is and is not Bible verse.
 
+This file only contains one Python class object with no output methods as it is meant for other files to import this file and call on this Python class object to perform work.
+
 Author: Jerry Zou'''
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
 
-# Import the trained model from wherever it is stored.
-traineModel = "/Users/Jerry/Desktop/testBibleModel"
+class BibleVerseClassifier:
+    def __init__(self, model_path):
+        self.tokenizer = AutoTokenizer.from_pretrained(model_path)
+        self.model = AutoModelForSequenceClassification.from_pretrained(model_path)
+        self.device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+        self.model.to(self.device)
+        self.model.eval()
+        self.label_mapping = {0: "Not a Bible Verse", 1: "Bible Verse"}  # Adjust based on your label definitions
 
-model = AutoModelForSequenceClassification.from_pretrained(traineModel)
-tokenizer = AutoTokenizer.from_pretrained(traineModel)
+    def checkBibleVerse(self, sentence):
+        inputs = self.tokenizer(sentence, padding='max_length', truncation=True, max_length=256, return_tensors="pt")
+        inputs = {key: val.to(self.device) for key, val in inputs.items()}
 
-device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-model.to(device)
-model.eval()
-def is_bible_verse(sentence):
-    inputs = tokenizer(sentence, padding='max_length', truncation=True, max_length=256, return_tensors="pt")
-    inputs = {key: val.to(device) for key, val in inputs.items()}
-
-    with torch.no_grad():
-        outputs = model(**inputs)
-        logits = outputs.logits
-        prediction = torch.argmax(logits, dim=-1).item()
+        with torch.no_grad():
+            outputs = self.model(**inputs)
+            logits = outputs.logits
+            prediction = torch.argmax(logits, dim=-1).item()
+        
+        return self.label_mapping[prediction]
     
-    label_mapping = {0: "Not a Bible Verse", 1: "Bible Verse"}  # Adjust based on your label definitions
-    return label_mapping[prediction]
+tunedModelPath = "/Users/Jerry/Desktop/100Paramtest" #refer to the fine-tuned model. Change this pathname according to your specific use
+comparisonMachine = BibleVerseClassifier(tunedModelPath)
 
-#TO DO: update the input variable below so to take in a sequence of sentences to compare.
-exampleSentence = "We will fight them on the beaches."
-print(f"'{exampleSentence}' -> {is_bible_verse(exampleSentence)}")
+example_sentence = "We will fight them on the beaches."
+print(f"'{example_sentence}' -> {comparisonMachine.checkBibleVerse(example_sentence)}")

@@ -38,6 +38,7 @@ class parseXMLFolder:
         self.tagAsList = []
         self.csvFolder = csvFolder
         self.selectedFileNames = []
+        self.customReplacement = "."
 
     def turnTagsIntoList(self):
         with open(self.tagsAsJson, "r") as file:
@@ -45,17 +46,28 @@ class parseXMLFolder:
         for tagSubList in tagsJsonFormat.values():
             for specificTag in tagSubList:
                 self.tagAsList.append(specificTag)
-        print(type(self.tagAsList))
 
     def openFiles(self, filePathsList):
         contentDictionary = {}
         for filePath in filePathsList:
-            with open(filePath, "r", encoding="utf-8") as file:
-                fileContent = file.read()  # Read the entire file content
-            fileDictionaryKey = os.path.basename(filePath)[:-4]
-            contentDictionary[fileDictionaryKey] = [{}]  # Initialize with a list containing an empty dictionary
-            tree = ET.ElementTree(ET.fromstring(fileContent))
-            root = tree.getroot()
+            with open(filePath, "r", encoding="utf-8", errors="ignore") as file:
+                fileContent = file.read() #.replace("�", self.customReplacement).strip()  # Read the entire file content
+            if not fileContent:
+                print(f"Skipping empty file: {filePath}")
+                continue
+            try:
+                fileDictionaryKey = os.path.basename(filePath)[:-4]
+                contentDictionary[fileDictionaryKey] = [{}]
+                tree = ET.ElementTree(ET.fromstring(fileContent))
+                root = tree.getroot()
+            except ET.ParseError as e:
+                print(f"Error parsing {filePath}: {e}")
+                print(f"Problematic content: {fileContent.splitlines()[2]}")  # Print the problematic line
+                continue
+            # fileDictionaryKey = os.path.basename(filePath)[:-4]
+            # contentDictionary[fileDictionaryKey] = [{}]  # Initialize with a list containing an empty dictionary
+            # tree = ET.ElementTree(ET.fromstring(fileContent))
+            # root = tree.getroot()
 
             def extract_text(element):
                 text = element.text or ""
@@ -109,11 +121,13 @@ class parseXMLFolder:
         for folder in self.folderPaths:
             for root, subFolder, files in os.walk(folder):
                 for fileName in files:
-                    if fileName.endswith(".xml"): # This ensures that only XML files are processed
+                    if fileName.endswith(".xml") and not fileName.startswith("._"): # This ensures that only XML files are processed
                         if self.selectedFileNames: #If there are designated files to read (aka if the self.selectedFileNames list is not empty)
                             for selectedXMLs in self.selectedFileNames:
-                                if fileName.contains(selectedXMLs): # only reads designated files
+                                # print(f"Processing {fileName}")
+                                if selectedXMLs in fileName: # only reads designated files
                                     fullFilePathName = os.path.join(root, fileName)
+                                    print(fullFilePathName)
                                     allFileNames.append(fullFilePathName)
                         else: # read all XML files in the folder
                             fullFilePathName = os.path.join(root, fileName)
@@ -228,17 +242,17 @@ class AuxiliarySingleXMLParcing:
 
 if __name__ == "__main__":
     '''--- Main Bible-non-Bible Comparison model ---'''
-    jPathRawExtracts = "StoringItalicsAndLineNumber.json" #change pathname accordingly
+    jPathRawExtracts = "XMLProcessingAndTraining/StoringItalicsAndLineNumber.json" #change pathname accordingly
     jpathFiltered = "XMLProcessingAndTraining/filteredXMLBibleRef.json" #change pathname accordingly
-    EEBOOne = "/Users/Jerry/Desktop/TestFolder" #change pathname accordingly
-    EEBOTwo = "/Users/Jerry/Desktop/A01" #change pathname accordingly
-    tagPath = "XMLCitationTags.json" #change pathname accordingly
+    EEBOOne = "/Volumes/JZ/EEBOData+2024/eebo_phase2/P4_XML_TCP_Ph2" #change pathname accordingly
+    EEBOTwo = "/Volumes/JZ/EEBOData+2024/eebo_phase2" #change pathname accordingly
+    tagPath = "XMLProcessingAndTraining/XMLCitationTags.json" #change pathname accordingly
     docClustersFolder = "/Users/Jerry/Desktop/EEBOClassificationsCSV" #please only use a folder of CSV files or a single CSV file.
 
     parcer = parseXMLFolder(jPathRawExtracts, jpathFiltered, EEBOOne, EEBOTwo, tagPath, docClustersFolder)
     parcer.selectiveFileName() # Call this function if we need to parce a selected group of files
-    # parcer.turnTagsIntoList()
-    # parcer.preprocessForJson()
+    parcer.turnTagsIntoList()
+    parcer.preprocessForJson()
     # parcer.filterParsedQuotes(jPathRawExtracts, jpathFiltered)
 
 

@@ -11,8 +11,8 @@ Track "tunedModelPath" variable, as it contains the path reference to the fine-t
 This file also contains two more auxiliary functions, one for data wrangling and exploration while the other is for parsing only one XML file in case of debugging, experimentation, or emergency needs.
 
 Author: Jerry Zou'''
-import xml.etree.ElementTree as ET
-import os, random, json, csv, sys, re, torch, numpy as np, matplotlib.pyplot as plt, pandas as pd
+
+import os, random, json, csv, sys, re, torch, xml.etree.ElementTree as ET, numpy as np, matplotlib.pyplot as plt, pandas as pd
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 '''the below import imports the external Python class object that drives the comparison model that compares whether a phrase is or is not in the Geneva Bible.'''
@@ -26,7 +26,7 @@ Currently, this program processes each file according to the line number of the 
 We need a function to determine the total line number of every file path so that when we create dispersion plots, they are proportional to each file.
 
 For the JSON file in which the output data is stored, the dictionary format is:
-(All variables, keys, and values in this dictionary are in the "str" data type.)
+(All index position variables (aka "sentenceContent"), dictionary keys, and dictionary values are STRINGS.)
 
 {
     fileName1 :[
@@ -267,7 +267,7 @@ class BibleVerseComparison:
             prediction = torch.argmax(logits, dim=-1).item()
         return self.label_mapping[prediction]
 
-'''Auxiliary function #1: INFORMATIONAL DATA WRANGLING CODE. CUSTOMIZE OUTPUT TO FIT THE GOAL OF EACH USAGE. These two functions grab the file names of all XML files in both Phases One and Two. This code cell is more for informational purposes, such as checking the number of files in each directory, etc.'''
+'''Auxiliary class object #1: INFORMATIONAL DATA WRANGLING CODE. CUSTOMIZE OUTPUT TO FIT THE GOAL OF EACH USAGE. These two functions grab the file names of all XML files in both Phases One and Two. This code cell is more for informational purposes, such as checking the number of files in each directory, etc.'''
 class AuxiliaryDataExploration:
     def __init__(self, folderPathOne, folderPathTwo):
         self.folderPathOne = folderPathOne
@@ -287,7 +287,7 @@ class AuxiliaryDataExploration:
                     fullFilePathName = os.path.join(root, fileName)
                     self.fileNameListTwo.append(os.path.basename(fullFilePathName)[:-4])
 
-'''Auxiliary function #2: This class object parces one single XML'''
+'''Auxiliary class object #2: This class object parces one single XML'''
 class AuxiliarySingleXMLParcing:
     def __init__(self, xmlPath):
         self.xmlPath = xmlPath

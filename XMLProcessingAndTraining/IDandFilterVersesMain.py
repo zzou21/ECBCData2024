@@ -1,3 +1,7 @@
+'''TO DO:
+- How to grab the context of a Bible citation in XML.
+- How to grab the Biblical citation position? (Which book, chapter, verse is being cited, etc).'''
+
 '''This file is the main body of the multi-file Bible-non-Bible verse comparison machine program. It extracts potential Biblical references/citations from EEBO's XML files and store them in a JSON. Then, it calls on an external Python class object that drives the fine-tuned MacBERTh comparison machine to compare which verse was in the Geneva Bible and store the results in a separate JSON file.
 
 Files to track:
@@ -56,7 +60,7 @@ For the JSON file in which the output data is stored, the dictionary format is:
                     sentenceContent1,
                 ]
             },
-            tag2:{}       #this means there is no content in fileName2 that is in the XML tag "tag2"
+            tag2:{}     #this means there is no content in fileName2 that is in the XML tag "tag2"
         }
     ]
 }
@@ -312,7 +316,7 @@ if __name__ == "__main__":
     EEBOTwo = "/Volumes/JZ/EEBOData+2024/eebo_phase2/P4_XML_TCP_Ph2" #change pathname accordingly
     tagPath = "XMLProcessingAndTraining/XMLCitationTags.json" #change pathname accordingly
     docClustersFolder = "/Users/Jerry/Desktop/EEBOClassificationsCSV" #please only use a folder of CSV files or a single CSV file.
-    pathToTunedModel = "/Users/Jerry/Desktop/100Paramtest" #change path accordingly. This variable path name refers to the trained Bible-non-Bible model
+    pathToTunedModel = "" #change path accordingly. This variable path name refers to the trained Bible-non-Bible model
 
     parcer = parseXMLFolder(jPathRawExtracts, jpathFiltered, EEBOOne, EEBOTwo, tagPath, docClustersFolder, pathToTunedModel)
     # parcer.selectiveFileName() # Call this function if we need to parce a selected group of files

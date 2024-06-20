@@ -1,6 +1,7 @@
 '''Auxiliary: for whenever this is necessary, this code reads XML files without its embedded tags. This allows users to turn EEBO's marked-up XML's into raw plain texts. This could be helpful if someone wants to use the raw EEBO text to do model training or other purposes.
 
 Author: Jerry Zou'''
+
 import xml.etree.ElementTree as ET
 import json, os, nltk, csv
 from nltk.tokenize.punkt import PunktSentenceTokenizer, PunktParameters

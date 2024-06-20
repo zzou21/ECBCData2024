@@ -10,25 +10,24 @@ from sklearn.model_selection import train_test_split
 from tqdm.auto import tqdm
 
 # csvFilePath = "/Users/Jerry/Desktop/GenevaBibleRecognitionDataSetUpdated.csv"
-# csvFilePath = "/Users/Jerry/Desktop/SmallDataGenevaBibleRecognitionDataSetUpdated.csv"
 #When using DCC:
 csvFilePath = "/hpc/group/datap2023ecbc/zz341/GenevaBibleRecognitionDataSetUpdated.csv"
-# csvFilePath = "/hpc/group/datap2023ecbc/zz341/SmallDataGenevaBibleRecognitionDataSetUpdated.csv"
+
 dataFrame = pd.read_csv(csvFilePath)
 
-hf_dataset = HFDataset.from_pandas(dataFrame)
+hfData = HFDataset.from_pandas(dataFrame)
 tokenizer = AutoTokenizer.from_pretrained('emanjavacas/MacBERTh')
 model = AutoModelForSequenceClassification.from_pretrained('emanjavacas/MacBERTh', num_labels=2)
 
 def tokenize_function(examples):
     return tokenizer(examples['Text'], padding='max_length', truncation=True, max_length=256)
 
-tokenized_datasets = hf_dataset.map(tokenize_function, batched=True)
+tokenizedDatasets = hfData.map(tokenize_function, batched=True)
 
-tokenized_datasets = tokenized_datasets.rename_column('Label', 'labels')
-tokenized_datasets.set_format(type='torch', columns=['input_ids', 'attention_mask', 'labels'])
+tokenizedDatasets = tokenizedDatasets.rename_column('Label', 'labels')
+tokenizedDatasets.set_format(type='torch', columns=['input_ids', 'attention_mask', 'labels'])
 
-train_test_split = tokenized_datasets.train_test_split(test_size=0.2)
+train_test_split = tokenizedDatasets.train_test_split(test_size=0.2)
 train_dataset = train_test_split['train']
 val_dataset = train_test_split['test']
 
@@ -44,19 +43,19 @@ class BibleDataset(Dataset):
 train_dataset = BibleDataset(train_dataset)
 val_dataset = BibleDataset(val_dataset)
 
-train_loader = DataLoader(train_dataset, batch_size=8, shuffle=True)
-val_loader = DataLoader(val_dataset, batch_size=8, shuffle=False)
+trainLoad = DataLoader(train_dataset, batch_size=8, shuffle=True)
+validationLoad = DataLoader(val_dataset, batch_size=8, shuffle=False)
 optimizer = torch.optim.AdamW(model.parameters(), lr=5e-5)
-num_epochs = 3
+epochCount = 3
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 model.to(device)
 
-progress_bar = tqdm(range(num_epochs * len(train_loader))) # set up training loop
+progressIndicatorBar = tqdm(range(epochCount * len(trainLoad))) # set up training loop
 
 model.train()
-for epoch in range(num_epochs):
-    for batch in train_loader:
+for epoch in range(epochCount):
+    for batch in trainLoad:
         batch = {k: v.to(device) for k, v in batch.items()}
         outputs = model(**batch)
         loss = outputs.loss
@@ -64,7 +63,7 @@ for epoch in range(num_epochs):
 
         optimizer.step()
         optimizer.zero_grad()
-        progress_bar.update(1)
+        progressIndicatorBar.update(1)
 
 # outputDirectory = '/Users/Jerry/Desktop'
 # When using DCC:

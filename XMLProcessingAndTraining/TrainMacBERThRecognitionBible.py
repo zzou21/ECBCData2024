@@ -1,9 +1,8 @@
-'''Fine-tuning MacBERTh on Geneva Bible and non-Geneva Bible sentences. Python Version. See other file for ipynb version.
+'''Fine-tuning MacBERTh on Geneva Bible and non-Geneva Bible sentences. Python Version. See other file for ipynb version. When using thsi code in DCC or other virtual machines, remember to change "csvFilePath" and "outputDir" variables so they point at the right file references.
 
 Author: Jerry Zou'''
 
-import pandas as pd
-import torch
+import pandas as pd, torch
 from torch.utils.data import DataLoader, Dataset
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, AdamW
 from datasets import Dataset as HFDataset
@@ -67,10 +66,10 @@ for epoch in range(num_epochs):
         optimizer.zero_grad()
         progress_bar.update(1)
 
-# output_dir = '/Users/Jerry/Desktop'
+# outputDirectory = '/Users/Jerry/Desktop'
 # When using DCC:
-output_dir = "/hpc/group/datap2023ecbc/zz341/finetunedBibleNonBible"
-model.save_pretrained(output_dir)
-tokenizer.save_pretrained(output_dir)
+outputDirectory = "/hpc/group/datap2023ecbc/zz341/finetunedBibleNonBible"
+model.save_pretrained(outputDirectory)
+tokenizer.save_pretrained(outputDirectory)
 
-print("Training complete. Model saved to", output_dir)
+print("Training complete. Model saved to", outputDirectory)

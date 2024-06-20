@@ -2,6 +2,8 @@
 
 This file only contains one Python class object with no output methods as it is meant for other files to import this file and call on this Python class object to perform work.
 
+This class object is already contained in the "IDandFilterVersesMain.py" file and is stored here again for back-up and testing purposes.
+
 Author: Jerry Zou'''
 
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
@@ -24,12 +26,11 @@ class BibleVerseComparison:
             logits = outputs.logits
             prediction = torch.argmax(logits, dim=-1).item()
         return self.label_mapping[prediction]
-    
-# tunedModelPath = "/Users/Jerry/Desktop/100Paramtest" #refer to the fine-tuned model. Change this pathname according to your specific use
-# comparisonMachine = BibleVerseComparison(tunedModelPath)
 
-# # Exact verse from Geneva Bible: "And God made the beast of the earth according to his kinde, and the cattell according to his kinde, & euery creeping thing of the earth according to his kind: & God saw that it was good."
+'''---comment out the following lines when calling the class object from another file---'''
 
-# testSentence = "And God mathe the beajt ov the ears , and the  according to his kinde, & euery creeeping thingss of the earths according to hiththththt kind: & God thaww that it wath jood."
-
-# print(f"'{testSentence}' -> {comparisonMachine.checkBibleVerse(testSentence)}")
+tunedModelPath = "/Users/Jerry/Desktop/100Paramtest" #refer to the fine-tuned model. Change this pathname according to your specific use
+comparisonMachine = BibleVerseComparison(tunedModelPath)
+# Exact verse from Geneva Bible: "And God made the beast of the earth according to his kinde, and the cattell according to his kinde, & euery creeping thing of the earth according to his kind: & God saw that it was good."
+testSentence = "And God mathe the beajt ov the ears , and the  according to his kinde, & euery creeeping thingss of the earths according to hiththththt kind: & God thaww that it wath jood."
+print(f"'{testSentence}' -> {comparisonMachine.checkBibleVerse(testSentence)}")

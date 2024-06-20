@@ -60,7 +60,6 @@ for epoch in range(epochCount):
         outputs = model(**batch)
         loss = outputs.loss
         loss.backward()
-
         optimizer.step()
         optimizer.zero_grad()
         progressIndicatorBar.update(1)

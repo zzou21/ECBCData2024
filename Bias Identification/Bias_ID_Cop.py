@@ -142,6 +142,6 @@ model_name = os.path.join(base_dir, 'data/fine-tuned-MacBERTh')
 # model_name = model_name = os.path.join(base_dir, '..', 'data/emanjavacas/MacBERTh')
 
 
-document_directory = os.path.join(base_dir, 'data/copland_spellclean.txt')
+document_directory = os.path.join(base_dir, 'data/A16864.txt')
 
 main(categories_json, document_directory, model_name, keyword)

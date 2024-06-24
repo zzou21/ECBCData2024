@@ -19,6 +19,7 @@ def load_categories(json_file):
 def read_sentence_document(document_path):
     with open(document_path, 'r') as f:
         text = f.read()
+        text.lower()
     
     # Tokenize the text into sentences using nltk
     sentences = sent_tokenize(text)
@@ -121,22 +122,24 @@ def main(categories_json, document_path, model_name, keyword):
     # Example: Project words from the document onto bias axes
     projection_faith = project_onto_bias_axis(keyword, embeddings, faith_bias_axis)
     projection_desire = project_onto_bias_axis(keyword, embeddings, desire_bias_axis)
+
     if (projection_faith is not None) and (projection_desire is not None):
         print(f"({projection_faith}, {projection_desire})")
-'''
-    if projection_faith is not None:
-        print(f"Projection of '{keyword}' onto Faith-Money axis: {projection_faith}")
-    if projection_desire is not None:
-        print(f"Projection of '{keyword}' onto Attraction-Repulsion axis: {projection_desire}")
-'''
-    
 
 # Now this is the main; feel free to change the following directory where fit
 base_dir = os.path.dirname(os.path.abspath(__file__))
 
 keyword = "profit"
-categories_json = os.path.join(base_dir, '..', 'data/categorized_words.json')
-document_path = os.path.join(base_dir, '..', 'data/copland_spellclean.txt')
-model_name = os.path.join(base_dir, '..', 'data/fine-tuned-MacBERTh')
+categories_json = "categorized_words.json"
+model_name = "finetuned_MacBERTh_Bible"
 # model_name = model_name = os.path.join(base_dir, '..', 'data/emanjavacas/MacBERTh')
-main(categories_json, document_path, model_name, keyword)
+
+document_directory = os.path.join(base_dir, '..', 'EEBOphase2_1590-1639_body_texts')
+
+for file_name in os.listdir(document_directory):
+    document_path = os.path.join(document_directory, file_name)
+    
+    # Ensure it's a file (not a subdirectory)
+    if os.path.isfile(document_path):
+        # Call the main function with the document path and other arguments
+        main(categories_json, document_path, model_name, keyword)

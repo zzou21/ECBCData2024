@@ -28,9 +28,9 @@ def read_sentence_document(document_path):
     split_sentences = []
     for sentence in sentences:
         words = sentence.split()
-        while len(words) > 450:
-            split_sentences.append(' '.join(words[:450]))
-            words = words[450:]
+        while len(words) > 400:
+            split_sentences.append(' '.join(words[:400]))
+            words = words[400:]
         split_sentences.append(' '.join(words))
 
     # Strip whitespace and filter out empty sentences
@@ -70,12 +70,8 @@ def compute_category_embeddings(categories, embeddings, tokenizer, model):
     for category, words in categories.items():
         category_embeddings = []
         for word in words:
-            if word in embeddings:
-                embedding = embeddings[word]
-                category_embeddings.append(embedding)
-            else:
-                term_embedding = get_single_embedding(word, tokenizer, model)
-                category_embeddings.append(term_embedding)
+            term_embedding = get_single_embedding(word, tokenizer, model)
+            category_embeddings.append(term_embedding)
         if category_embeddings:
             categories_embeddings[category] = np.mean(category_embeddings, axis=0)
     return categories_embeddings

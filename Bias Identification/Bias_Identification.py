@@ -19,6 +19,7 @@ def load_categories(json_file):
 def read_sentence_document(document_path):
     with open(document_path, 'r') as f:
         text = f.read()
+        text.lower()
     
     # Tokenize the text into sentences using nltk
     sentences = sent_tokenize(text)
@@ -27,9 +28,9 @@ def read_sentence_document(document_path):
     split_sentences = []
     for sentence in sentences:
         words = sentence.split()
-        while len(words) > 450:
-            split_sentences.append(' '.join(words[:450]))
-            words = words[450:]
+        while len(words) > 400:
+            split_sentences.append(' '.join(words[:400]))
+            words = words[400:]
         split_sentences.append(' '.join(words))
 
     # Strip whitespace and filter out empty sentences
@@ -69,15 +70,10 @@ def compute_category_embeddings(categories, embeddings, tokenizer, model):
     for category, words in categories.items():
         category_embeddings = []
         for word in words:
-            if word in embeddings:
-                embedding = embeddings[word]
-                category_embeddings.append(embedding)
-            else:
-                term_embedding = get_single_embedding(word, tokenizer, model)
+            term_embedding = get_single_embedding(word, tokenizer, model)
+            category_embeddings.append(term_embedding)
         if category_embeddings:
             categories_embeddings[category] = np.mean(category_embeddings, axis=0)
-        else:
-            print(f"Warning: No embeddings found for category '{category}'.")
     return categories_embeddings
 
 # Construct bias axes
@@ -87,14 +83,15 @@ def construct_bias_axes(category_embeddings):
     return faith_bias_axis, desire_bias_axis
 
 # Function to project a word onto bias axes
-def project_onto_bias_axis(word, embeddings, bias_axis):
+def project_onto_bias_axis(word, embeddings, bias_axis,tokenizer, model):
     if word in embeddings:
         embedding = embeddings[word]
         projection = np.dot(embedding, bias_axis.T) / np.linalg.norm(bias_axis)
         return projection
     else:
-        print(f"Error: Word '{word}' not found in embeddings.")
-        return None
+        embedding = get_single_embedding(word, tokenizer, model)
+        projection = np.dot(embedding, bias_axis.T) / np.linalg.norm(bias_axis)
+        return projection
 
 # Main function
 def main(categories_json, document_path, model_name, keyword):
@@ -107,9 +104,6 @@ def main(categories_json, document_path, model_name, keyword):
     
     # Read and tokenize the document
     sentences = read_sentence_document(document_path)
-
-    print(f"The maximum sentence length is: {len(max(sentences, key=len))} characters")
-
     embeddings = get_word_embedding(sentences, tokenizer, model)
     
     # Compute category embeddings
@@ -119,16 +113,11 @@ def main(categories_json, document_path, model_name, keyword):
     faith_bias_axis, desire_bias_axis = construct_bias_axes(category_embeddings)
     
     # Example: Project words from the document onto bias axes
-    projection_faith = project_onto_bias_axis(keyword, embeddings, faith_bias_axis)
-    projection_desire = project_onto_bias_axis(keyword, embeddings, desire_bias_axis)
+    projection_faith = project_onto_bias_axis(keyword, embeddings, faith_bias_axis, tokenizer, model)
+    projection_desire = project_onto_bias_axis(keyword, embeddings, desire_bias_axis, tokenizer, model)
+
     if (projection_faith is not None) and (projection_desire is not None):
         print(f"({projection_faith}, {projection_desire})")
-'''
-    if projection_faith is not None:
-        print(f"Projection of '{keyword}' onto Faith-Money axis: {projection_faith}")
-    if projection_desire is not None:
-        print(f"Projection of '{keyword}' onto Attraction-Repulsion axis: {projection_desire}")
-'''
     
 
 # Now this is the main; feel free to change the following directory where fit
@@ -136,7 +125,7 @@ base_dir = os.path.dirname(os.path.abspath(__file__))
 
 keyword = "profit"
 categories_json = os.path.join(base_dir, '..', 'data/categorized_words.json')
-document_path = os.path.join(base_dir, '..', 'data/copland_spellclean.txt')
+document_path = os.path.join(base_dir, '..', 'data/A00151.txt')
 model_name = os.path.join(base_dir, '..', 'data/fine-tuned-MacBERTh')
 # model_name = model_name = os.path.join(base_dir, '..', 'data/emanjavacas/MacBERTh')
 main(categories_json, document_path, model_name, keyword)

@@ -42,7 +42,7 @@ def read_sentence_document(document_path):
 # Function to get word embeddings
 def get_word_embedding(chunk, tokenizer, model):
     word_embeddings = {}
-    inputs = tokenizer(chunk, return_tensors='pt', padding=True, truncation=True)
+    inputs = tokenizer(chunk, return_tensors='pt', padding=True, truncation=True, max_length=512)
     with torch.no_grad():
         outputs = model(**inputs)
     embeddings = outputs.last_hidden_state

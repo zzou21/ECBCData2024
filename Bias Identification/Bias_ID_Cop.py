@@ -106,7 +106,7 @@ def project_onto_bias_axis(word, embeddings, bias_axis,tokenizer, model):
     return projection
 
 # Main function
-def main(categories_json, document_path, model_name, keyword, result_file):
+def main(categories_json, document_path, model_name, keyword):
     # Load categories
     categories = load_categories(categories_json)
     
@@ -129,9 +129,7 @@ def main(categories_json, document_path, model_name, keyword, result_file):
     projection_desire = project_onto_bias_axis(keyword, embeddings, desire_bias_axis, tokenizer, model)
 
     if (projection_faith is not None) and (projection_desire is not None):
-        result = f"{os.path.basename(document_path)}: ({projection_faith}, {projection_desire})\n"
-        with open(result_file, 'a') as f:
-            f.write(result)
+        print(f"{os.path.basename(document_path)}: ({projection_faith}, {projection_desire})\n")
     
 
 # Now this is the main; feel free to change the following directory where fit
@@ -144,13 +142,6 @@ model_name = os.path.join(base_dir, 'data/fine-tuned-MacBERTh')
 # model_name = model_name = os.path.join(base_dir, '..', 'data/emanjavacas/MacBERTh')
 
 
-document_directory = "/Volumes/JZ/EEBOData+2024/EEBOphase2_1590-1639_body_texts"
+document_directory = os.path.join(base_dir, 'data/copland_spellclean.txt')
 
-result_file = os.path.join(base_dir, 'data/projection_results.txt')
-
-for file_name in os.listdir(document_directory):
-    document_path = os.path.join(document_directory, file_name) 
-    # Ensure it's a file (not a subdirectory)
-    if os.path.isfile(document_path) and file_name[0] != ".":
-        # Call the main function with the document path and other arguments
-        main(categories_json, document_path, model_name, keyword, result_file)
+main(categories_json, document_directory, model_name, keyword)

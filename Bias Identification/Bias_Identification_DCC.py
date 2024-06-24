@@ -24,13 +24,14 @@ def read_sentence_document(document_path):
     # Tokenize the text into sentences using nltk
     sentences = sent_tokenize(text)
 
-    # Further split the sentences if there are more than 450 words
+    # Further split the sentences if there are more than 400 words
     split_sentences = []
     for sentence in sentences:
         words = sentence.split()
         while len(words) > 400:
             split_sentences.append(' '.join(words[:400]))
             words = words[400:]
+
         split_sentences.append(' '.join(words))
 
     # Strip whitespace and filter out empty sentences

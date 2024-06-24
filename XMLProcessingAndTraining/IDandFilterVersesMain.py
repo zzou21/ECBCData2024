@@ -251,13 +251,13 @@ class parseXMLFolder:
             except csv.Error:
                 print("Please only use CSV files or folder of CSV files")
                 sys.exit(1)
-        print(self.selectedFileNames)
+        #print(self.selectedFileNames)
 
 '''This Python class object implements the Bible-Non-Bible Comparator fine-tuned MacBERTh to detect which verse is and is not Bible verse. This is called within the parseXMLFolder class object.'''
 class BibleVerseComparison:
-    def __init__(self, model_path):
-        self.tokenizer = AutoTokenizer.from_pretrained(model_path)
-        self.model = AutoModelForSequenceClassification.from_pretrained(model_path)
+    def __init__(self, modelPath):
+        self.tokenizer = AutoTokenizer.from_pretrained(modelPath)
+        self.model = AutoModelForSequenceClassification.from_pretrained(modelPath)
         self.device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
         self.model.to(self.device)
         self.model.eval()
@@ -316,7 +316,7 @@ if __name__ == "__main__":
     EEBOTwo = "/Volumes/JZ/EEBOData+2024/eebo_phase2/P4_XML_TCP_Ph2" #change pathname accordingly
     tagPath = "XMLProcessingAndTraining/XMLCitationTags.json" #change pathname accordingly
     docClustersFolder = "/Users/Jerry/Desktop/EEBOClassificationsCSV" #please only use a folder of CSV files or a single CSV file.
-    pathToTunedModel = "" #change path accordingly. This variable path name refers to the trained Bible-non-Bible model
+    pathToTunedModel = "/Users/Jerry/Desktop/ShuffleFullBibleModel" #change path accordingly. This variable path name refers to the trained Bible-non-Bible model
 
     parcer = parseXMLFolder(jPathRawExtracts, jpathFiltered, EEBOOne, EEBOTwo, tagPath, docClustersFolder, pathToTunedModel)
     # parcer.selectiveFileName() # Call this function if we need to parce a selected group of files

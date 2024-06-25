@@ -80,9 +80,9 @@ def compute_category_embeddings(categories, embeddings, tokenizer, model):
         category_embeddings = []
         for word in words:
             term_embedding = get_single_embedding(word, tokenizer, model)
+            term_embedding = term_embedding / np.linalg.norm(term_embedding)
             category_embeddings.append(term_embedding)
-        if category_embeddings:
-            categories_embeddings[category] = np.mean(category_embeddings, axis=0)
+        categories_embeddings[category] = np.mean(category_embeddings, axis=0)
     return categories_embeddings
 
 # Construct bias axes
@@ -135,13 +135,13 @@ def main(categories_json, document_path, model_name, keyword):
 # Now this is the main; feel free to change the following directory where fit
 base_dir = os.getcwd()
 
-keyword = "profit"
+keyword = "virginia"
 categories_json = os.path.join(base_dir, 'data/categorized_words.json')
 
-model_name = os.path.join(base_dir, 'data/fine-tuned-MacBERTh')
-# model_name = model_name = os.path.join(base_dir, '..', 'data/emanjavacas/MacBERTh')
+# model_name = os.path.join(base_dir, 'data/fine-tuned-MacBERTh')
+model_name = 'emanjavacas/MacBERTh'
 
 
-document_directory = os.path.join(base_dir, 'data/A16864.txt')
+document_directory = os.path.join(base_dir, 'data/brinsley.txt')
 
 main(categories_json, document_directory, model_name, keyword)

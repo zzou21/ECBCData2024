@@ -111,10 +111,6 @@ def construct_bias_axes(category_embeddings):
     faith_bias_axis = category_embeddings["Faith"] - category_embeddings["Money"]
     f = category_embeddings["Faith"]
     m = category_embeddings["Money"]
-    print("******\n")
-    print(f)
-    print(m)
-    print("******")
 
     dot = np.dot(f.T, m)
     print(dot / (np.linalg.norm(f) * np.linalg.norm(m)))
@@ -154,7 +150,7 @@ def main(categories_json, document_path, model_name):
     projection_faith = project_onto_bias_axis(embeddings, faith_bias_axis)
 
     if (projection_faith is not None):
-        print(f"{os.path.basename(document_path)}: ({statistics.mean(projection_faith)})\n")
+        print(f"{os.path.basename(document_path)}: ({statistics.median(projection_faith)})\n")
     
 
 # Now this is the main; feel free to change the following directory where fit
@@ -166,6 +162,6 @@ categories_json = os.path.join(base_dir, 'data/categorized_words.json')
 model_name = 'emanjavacas/MacBERTh'
 
 
-document_directory = os.path.join(base_dir, 'data/A00151.txt')
+document_directory = os.path.join(base_dir, 'data/copland_spellclean.txt')
 
 main(categories_json, document_directory, model_name)

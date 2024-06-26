@@ -1,0 +1,6 @@
+WordIDPerDocument.py results:
+
+Using John Brinsley:
+unnormalized: {'commodity': 8734.961487621069, 'Christianity': 8480.18762472272}
+
+Using Copland:

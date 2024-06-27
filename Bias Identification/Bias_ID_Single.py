@@ -49,6 +49,7 @@ def read_sentence_document(document_path):
 
 # Function to get word embeddings
 def get_word_embedding(chunks, tokenizer, model):
+    word_times = {}
     word_embeddings = {}
     for chunk in chunks:
         inputs = tokenizer(chunk, return_tensors='pt', padding=True, truncation=True, max_length=512)
@@ -56,8 +57,14 @@ def get_word_embedding(chunks, tokenizer, model):
             outputs = model(**inputs)
         embeddings = outputs.last_hidden_state
         for i, word in enumerate(tokenizer.convert_ids_to_tokens(inputs['input_ids'][0])):
+            if word not in word_times:
+                word_times[word] = 1
+            else:
+                word_times[word]+=1
             if word not in word_embeddings:
                 word_embeddings[word] = embeddings[0, i, :].numpy()
+            else:
+                word_embeddings[word] = (word_embeddings[word] * (word_times[word]-1) + embeddings[0, i, :].numpy()) / word_times[word]
     return word_embeddings
 
 def get_sentence_embedding(sentence, tokenizer, model):
@@ -93,18 +100,29 @@ def construct_bias_axes(category_embeddings):
     faith_bias_axis = category_embeddings["Faith"] - category_embeddings["Money"]
     return faith_bias_axis
 
+# Find the substitute words for the original keyword, by iterating over the standard word list
+def substitute_word(word, document_dir):
+    json_dir = os.path.join(document_dir, "../../standardizedwords.json")
+    standardWord = load_categories(json_dir)
+    ret = []
+    for term, equals in standardWord.item():
+        for spell in equals:
+            if spell==word:
+                ret.append(term)
+    return ret
+
 # Function to project a word onto bias axes
-def project_onto_bias_axis(word, embeddings, bias_axis,tokenizer, model):
+def project_onto_bias_axis(word, embeddings, bias_axis, document_dir):
     if word in embeddings:
         embedding = embeddings[word]
         projection = np.dot(embedding, bias_axis.T) / np.linalg.norm(bias_axis)
     else:
-        if "profite" in embeddings:
-            embedding = embeddings["profite"]
-            projection = np.dot(embedding, bias_axis.T) / np.linalg.norm(bias_axis)
-        else:
-            embedding = get_word_embedding(word, tokenizer, model)[word]
-            projection = np.dot(embedding, bias_axis.T) / np.linalg.norm(bias_axis)
+        for substitute in substitute_word(word, document_dir):
+            if substitute in embeddings:
+                embedding = embeddings[substitute]
+                projection = np.dot(embedding, bias_axis.T) / np.linalg.norm(bias_axis)
+            else:
+                projection = 0
     return projection
 
 # Main function
@@ -127,7 +145,7 @@ def main(categories_json, document_path, model_name, keyword):
     faith_bias_axis = construct_bias_axes(category_embeddings)
     
     # Example: Project words from the document onto bias axes
-    projection_faith = project_onto_bias_axis(keyword, embeddings, faith_bias_axis, tokenizer, model)
+    projection_faith = project_onto_bias_axis(keyword, embeddings, faith_bias_axis, document_directory)
     
     if (projection_faith is not None):
         print(f"{os.path.basename(document_path)}: ({projection_faith})\n")

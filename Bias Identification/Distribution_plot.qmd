@@ -1,0 +1,38 @@
+```{r}
+# Read the CSV file
+data <- read.csv("./Book1.csv", header = FALSE, stringsAsFactors = FALSE)
+
+```
+
+```{r}
+library(tidyr)
+library(dplyr)
+
+# Split the column into two columns
+data <- separate(data, V1, into = c("file_name", "value"), sep = ": ")
+
+glimpse(data)
+```
+
+```{r}
+data$value <- as.numeric(data$value)
+```
+
+```{r}
+data_cleaned <- data |>
+  filter(value != 0)
+```
+
+
+```{r}
+library(ggplot2)
+
+# Plot the distribution
+data_cleaned |> 
+  ggplot(aes(x = value)) +
+  geom_histogram(binwidth = 0.05, fill = "blue", color = "black") +
+  theme_minimal() +
+  labs(title = "Distribution of Values", x = "Value", y = "Frequency")
+
+```
+

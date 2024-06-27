@@ -60,36 +60,38 @@ def get_word_embedding(chunks, tokenizer, model):
                 word_embeddings[word] = embeddings[0, i, :].numpy()
     return word_embeddings
 
-def get_single_embedding(word, tokenizer, model):
-    # Tokenize the word
-    inputs = tokenizer(word, return_tensors='pt')
-    
-    # Get the embeddings
+def get_sentence_embedding(sentence, tokenizer, model):
+    word_embeddings = {}
+    chunk = sentence
+    inputs = tokenizer(chunk, return_tensors='pt', padding=True, truncation=True, max_length=512)
     with torch.no_grad():
         outputs = model(**inputs)
-    
-    # Extract the embedding for the word
     embeddings = outputs.last_hidden_state
-    word_embedding = embeddings[0, 1, :].numpy()  # [CLS] token is at index 0, the word is at index 1
-    return word_embedding
+    for i, word in enumerate(tokenizer.convert_ids_to_tokens(inputs['input_ids'][0])):
+        if word not in word_embeddings:
+            word_embeddings[word] = embeddings[0, i, :].numpy()
+    return word_embeddings
 
 # Compute average vector for each category
-def compute_category_embeddings(categories, embeddings, tokenizer, model):
+def compute_category_embeddings(categories, tokenizer, model):
     categories_embeddings = {}
-    for category, words in categories.items():
+    for category, sentences in categories.items():
         category_embeddings = []
-        for word in words:
-            term_embedding = get_single_embedding(word, tokenizer, model)
-            term_embedding = term_embedding / np.linalg.norm(term_embedding)
-            category_embeddings.append(term_embedding)
-        categories_embeddings[category] = np.mean(category_embeddings, axis=0)
+        for word, sentence in sentences.items():
+            sentence_embedding = get_sentence_embedding(sentence, tokenizer, model)
+            if word in sentence_embedding:
+                term_embedding = sentence_embedding[word]
+                category_embeddings.append(term_embedding)
+        if category_embeddings:
+            categories_embeddings[category] = np.mean(category_embeddings, axis=0)
+        else:
+            categories_embeddings[category] = np.zeros(model.config.hidden_size)
     return categories_embeddings
 
 # Construct bias axes
 def construct_bias_axes(category_embeddings):
     faith_bias_axis = category_embeddings["Faith"] - category_embeddings["Money"]
-    desire_bias_axis = category_embeddings["Attraction"] - category_embeddings["Repulsion"]
-    return faith_bias_axis, desire_bias_axis
+    return faith_bias_axis
 
 # Function to project a word onto bias axes
 def project_onto_bias_axis(word, embeddings, bias_axis,tokenizer, model):
@@ -101,7 +103,7 @@ def project_onto_bias_axis(word, embeddings, bias_axis,tokenizer, model):
             embedding = embeddings["profite"]
             projection = np.dot(embedding, bias_axis.T) / np.linalg.norm(bias_axis)
         else:
-            embedding = get_single_embedding(word, tokenizer, model)
+            embedding = get_word_embedding(word, tokenizer, model)[word]
             projection = np.dot(embedding, bias_axis.T) / np.linalg.norm(bias_axis)
     return projection
 
@@ -119,29 +121,28 @@ def main(categories_json, document_path, model_name, keyword):
     embeddings = get_word_embedding(sentences, tokenizer, model)
     
     # Compute category embeddings
-    category_embeddings = compute_category_embeddings(categories, embeddings, tokenizer, model)
-    
+    category_embeddings = compute_category_embeddings(categories, tokenizer, model)
+
     # Construct bias axes
-    faith_bias_axis, desire_bias_axis = construct_bias_axes(category_embeddings)
+    faith_bias_axis = construct_bias_axes(category_embeddings)
     
     # Example: Project words from the document onto bias axes
     projection_faith = project_onto_bias_axis(keyword, embeddings, faith_bias_axis, tokenizer, model)
-    projection_desire = project_onto_bias_axis(keyword, embeddings, desire_bias_axis, tokenizer, model)
-
-    if (projection_faith is not None) and (projection_desire is not None):
-        print(f"{os.path.basename(document_path)}: ({projection_faith}, {projection_desire})\n")
+    
+    if (projection_faith is not None):
+        print(f"{os.path.basename(document_path)}: ({projection_faith})\n")
     
 
 # Now this is the main; feel free to change the following directory where fit
 base_dir = os.getcwd()
 
-keyword = "virginia"
+keyword = "profit"
 categories_json = os.path.join(base_dir, 'data/categorized_words.json')
 
 # model_name = os.path.join(base_dir, 'data/fine-tuned-MacBERTh')
 model_name = 'emanjavacas/MacBERTh'
 
 
-document_directory = os.path.join(base_dir, 'data/brinsley.txt')
+document_directory = os.path.join(base_dir, 'data/copland_spellclean.txt')
 
 main(categories_json, document_directory, model_name, keyword)

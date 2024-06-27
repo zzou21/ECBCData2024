@@ -1,7 +1,7 @@
 '''This file creates a graph for a document in which each point represents one word
 
 Author: Jerry Zou'''
-import json, os, torch, numpy as np, nltk, matplotlib.pyplot as plt
+import json, os, torch, numpy as np, nltk
 from transformers import AutoTokenizer, AutoModel
 from nltk.tokenize import word_tokenize, sent_tokenize
 from sklearn.cluster import KMeans
@@ -44,16 +44,17 @@ def getWordEmbeddings(sentences, sentence_word_tokens, tokenizer, model):
         inputs = tokenizer(sentence, return_tensors='pt', padding=True, truncation=True, max_length=512)
         with torch.no_grad():
             outputs = model(**inputs)
-        embeddings = outputs.last_hidden_state.squeeze(0)
-        token_ids = inputs['input_ids'].squeeze(0)
+        embeddings = outputs.last_hidden_state.squeeze(0).numpy()
+        token_ids = inputs['input_ids'].squeeze(0).numpy()
 
         # Iterate over the token IDs and their embeddings
         for idx, token_id in enumerate(token_ids):
             word_token = tokenizer.convert_ids_to_tokens(token_id.item())
             if word_token not in stopwords and word_token.isalpha():
                 if word_token not in wordEmbeddings:
-                    wordEmbeddings[word_token] = []
-                wordEmbeddings[word_token].append(embeddings[idx, :].numpy())
+                    unique_key = f"{word_token}_{len(wordEmbeddings)}"
+                    wordEmbeddings[unique_key] = embeddings[idx]  # Ensure this is a numpy array
+
     # print(type(wordEmbeddings))
     return wordEmbeddings
 
@@ -73,36 +74,77 @@ def calculate_keyword_similarity(keyword_embeddings):
     if len(keyword_embeddings) < 2:
         raise ValueError("Need at least two keywords to calculate similarity")
     keywords = list(keyword_embeddings.keys())
-    embedding1 = keyword_embeddings[keywords[0]]
-    embedding2 = keyword_embeddings[keywords[1]]
+    embedding1 = np.array(keyword_embeddings[keywords[0]]).reshape(1, -1)  # Convert to numpy array and reshape to 2D
+    embedding2 = np.array(keyword_embeddings[keywords[1]]).reshape(1, -1)  # Convert to numpy array and reshape to 2D
     similarity = cosine_similarity([embedding1], [embedding2])[0][0]
     print(f"Similarity between '{keywords[0]}' and '{keywords[1]}': {similarity}")
     return similarity
 
-def documentScore(embeddings, keywords, tokenizer, model):
-    keywordEmbeddingNumbersDictionary = {word: keywordEmbedding(word, tokenizer, model) for word in keywords}
+def documentScore(embeddings, keywords, keyword_embeddings):
     keywordScoresDictionary = {word: 0 for word in keywords}
+    keywordCountDictionary = {word: 0 for word in keywords}
 
-    # debug_info = {keyword: [] for keyword in keywords}  # FOR DEBUGGING
+    for word, embedding in embeddings.items():
+        embedding = embedding.reshape(1, -1)  # Reshape to 2D
+        for keyword, keyword_embedding in keyword_embeddings.items():
+            keyword_embedding = keyword_embedding.reshape(1, -1)  # Reshape to 2D
+            print(f"keyword_embedding in score: {keyword_embedding}")
+            similarity = cosine_similarity(embedding, keyword_embedding)[0][0]
+            if -1 <= similarity <= 1:  # Ensure the cosine similarity is within valid range
+                angular_distance = np.arccos(similarity)
+                keywordScoresDictionary[keyword.split('_')[0]] += angular_distance
+                keywordCountDictionary[keyword.split('_')[0]] += 1
 
-    for word, embeddingNumbersList in embeddings.items():
-        for embedding in embeddingNumbersList:
-            for word, embeddingScore in keywordEmbeddingNumbersDictionary.items():
-                similarity = cosine_similarity([embedding], [embeddingScore])[0][0]
-                # similarity = np.dot(embedding, embeddingScore) / (np.linalg.norm(embedding) * np.linalg.norm(embeddingScore))
-                keywordScoresDictionary[word] += similarity
+    print(f"unnormalized (sum of angular distances): {keywordScoresDictionary}")
+    normalizedScores = {keyword: keywordScoresDictionary[keyword] / keywordCountDictionary[keyword] if keywordCountDictionary[keyword] > 0 else float('inf') for keyword in keywords}
+    cosineNormalizedScores = {keyword: np.cos(normalizedScores[keyword]) for keyword in normalizedScores}
+    print(f"normalized (cosine of average angular distance): {cosineNormalizedScores}")
 
-                # debug_info[word].append(similarity) # FOR DEBUGGING
-    print(f"unnormalized: {keywordScoresDictionary}")
-    numEmbeddingsSum = sum(len(embedding_list) for embedding_list in embeddings.values())
-    normalizedScores = {keyword: score / numEmbeddingsSum for keyword, score in keywordScoresDictionary.items()}
-    print(f"normalized: {normalizedScores}")
+    return cosineNormalizedScores
 
-    # for keyword, scores in debug_info.items(): # FOR DEBUGGING
-    #     print(f"Similarity scores for keyword '{keyword}': {scores[:10]}...")  # Print first 10 for brevity
-    #     print(f"Average similarity for keyword '{keyword}': {np.mean(scores)}")
+# def documentScore(embeddings, keywords, keyword_embeddings):
+#     keywordScoresDictionary = {word: 0 for word in keywords}
+#     keywordCountDictionary = {word: 0 for word in keywords}
 
-    return keywordScoresDictionary
+#     for word, embeddingNumbersList in embeddings.items():
+#         for embedding in embeddingNumbersList:
+#             for keyword, keyword_embedding_list in keyword_embeddings.items():
+#                 for keyword_embedding in keyword_embedding_list:
+#                     similarity = cosine_similarity([embedding], [keyword_embedding])[0][0]
+#                     if -1 <= similarity <= 1:  # Ensure the cosine similarity is within valid range
+#                         angular_distance = np.arccos(similarity)
+#                         keywordScoresDictionary[keyword] += angular_distance
+#                         keywordCountDictionary[keyword] += 1
+
+#     print(f"unnormalized (sum of angular distances): {keywordScoresDictionary}")
+#     normalizedScores = {keyword: keywordScoresDictionary[keyword] / keywordCountDictionary[keyword] if keywordCountDictionary[keyword] > 0 else float('inf') for keyword in keywords}
+#     cosineNormalizedScores = {keyword: np.cos(normalizedScores[keyword]) for keyword in normalizedScores}
+#     print(f"normalized (cosine of average angular distance): {cosineNormalizedScores}")
+
+# def documentScore(embeddings, keywords, tokenizer, model):
+#     keywordEmbeddingNumbersDictionary = {word: keywordEmbedding(word, tokenizer, model) for word in keywords}
+#     keywordScoresDictionary = {word: 0 for word in keywords}
+
+#     # debug_info = {keyword: [] for keyword in keywords}  # FOR DEBUGGING
+
+#     for word, embeddingNumbersList in embeddings.items():
+#         for embedding in embeddingNumbersList:
+#             for word, embeddingScore in keywordEmbeddingNumbersDictionary.items():
+#                 similarity = cosine_similarity([embedding], [embeddingScore])[0][0]
+#                 # similarity = np.dot(embedding, embeddingScore) / (np.linalg.norm(embedding) * np.linalg.norm(embeddingScore))
+#                 keywordScoresDictionary[word] += np.arccos(similarity) #arc cosine
+
+#                 # debug_info[word].append(similarity) # FOR DEBUGGING
+#     print(f"unnormalized: {keywordScoresDictionary}")
+#     numEmbeddingsSum = sum(len(embedding_list) for embedding_list in embeddings.values())
+#     normalizedScores = {keyword: score / numEmbeddingsSum for keyword, score in keywordScoresDictionary.items()}
+#     print(f"normalized: {np.cos(normalizedScores)}") #add cosine to normalizedScores
+
+#     # for keyword, scores in debug_info.items(): # FOR DEBUGGING
+#     #     print(f"Similarity scores for keyword '{keyword}': {scores[:10]}...")  # Print first 10 for brevity
+#     #     print(f"Average similarity for keyword '{keyword}': {np.mean(scores)}")
+
+#     return keywordScoresDictionary
 
 def wordClusteringSingleDocument(wordEmbeddingResults, clusterCount):
     wordsList = []
@@ -117,43 +159,30 @@ def wordClusteringSingleDocument(wordEmbeddingResults, clusterCount):
     print(labels)
     return wordsList, embeddings, labels
 
-def visualizeClusters(words, embeddings, labels):
-    tsne = TSNE(n_components=2, random_state=42)
-    final_embeddings = tsne.fit_transform(embeddings)
+def getContextualEmbeddings(keywords, sentences, tokenizer, model):
+    keyword_embeddings = {}
+    for keyword, sentence in zip(keywords, sentences):
+        print(f"Processing keyword '{keyword}' in sentence: {sentence}")  # Debug statement
+        inputs = tokenizer(sentence, return_tensors='pt', padding=True, truncation=True, max_length=512)
+        with torch.no_grad():
+            outputs = model(**inputs)
+        embeddings = outputs.last_hidden_state.squeeze(0).numpy()
+        token_ids = inputs['input_ids'].squeeze(0).numpy()
 
-    plt.figure(figsize=(14, 10))
-    for i, word in enumerate(words):
-        plt.scatter(final_embeddings[i, 0], final_embeddings[i, 1], c=f'C{labels[i]}')
-        plt.annotate(word, (final_embeddings[i, 0], final_embeddings[i, 1]))
+        subwords = tokenizer.convert_ids_to_tokens(token_ids.tolist())
+        print(f"Tokenized sentence: {subwords}")  # Debug statement
 
-    plt.title("Word Embeddings Clustering")
-    plt.xlabel("Dimension 1")
-    plt.ylabel("Dimension 2")
-    plt.show()
+        for idx, token_id in enumerate(token_ids):
+            word_token = tokenizer.convert_ids_to_tokens(token_id.item())
+            print(f"word token: {word_token}")
+            if word_token == keyword or word_token.lstrip("##") == keyword:
+                unique_key = f"{keyword}_{len(keyword_embeddings)}"
+                # keyword_embeddings[unique_key] = embeddings[idx, :].numpy()
+                keyword_embeddings[unique_key] = embeddings[idx]  # Ensure this is a numpy array
 
+    print(f"Keyword embeddings: {keyword_embeddings}")  # Debug statement
+    return keyword_embeddings
 
-
-#Calculating the cosine similarity of words within the context of the text
-def getContextualEmbeddings(word, sentences, word_tokens, tokenizer, model):
-    embeddings = []
-    for sentence, tokens in zip(sentences, word_tokens):
-        if word in tokens:
-            print(f"Word '{word}' found in sentence: {sentence}")
-
-            inputs = tokenizer(sentence, return_tensors='pt', padding=True, truncation=True, max_length=512)
-            with torch.no_grad():
-                outputs = model(**inputs)
-            sentence_embedding = outputs.last_hidden_state.squeeze(0)
-            token_ids = inputs['input_ids'].squeeze(0)
-
-            # Convert token ids back to tokens and find the matching subwords
-            subwords = tokenizer.convert_ids_to_tokens(token_ids.tolist())
-            for idx, subword in enumerate(subwords):
-                # Check if subword matches the word we're looking for
-                if subword == word or subword.lstrip("##") == word:
-                    embeddings.append(sentence_embedding[idx].numpy())
-                    break  # Consider only the first occurrence in the sentence
-    return embeddings
 
 def calculate_similarity_between_contextual_words(embeddings1, embeddings2):
     similarities = []
@@ -161,6 +190,7 @@ def calculate_similarity_between_contextual_words(embeddings1, embeddings2):
         for emb2 in embeddings2:
             # similarity = cosine_similarity([emb1], [emb2])[0][0]
             similarity = cosine_similarity_manual(emb1, emb2)
+            #arc cos
             similarities.append(similarity)
     return similarities
 
@@ -175,29 +205,24 @@ def cosine_similarity_manual(vec1, vec2):
 if __name__ == "__main__":
     textPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/data/brinsley.txt"
     encodingMethods = ["utf-8", "latin-1", "cp1252"]
-    keywords = ["Virginia", "Mars"]
+    keywords = ["london", "christ"]
     # ["money", "Christiandome", "Christian", "gold", "tobacco", "profit", "Christian Kingdom", "Bible", "stock", "shares", "school"]
     modelPath = "emanjavacas/MacBERTh"
     tokenizer = AutoTokenizer.from_pretrained(modelPath)
     model = AutoModel.from_pretrained(modelPath)
     kmeansClusterCount = 5
 
+    sentenceKeyword = ["In this year of our Lord, fifteen hundred and eighty-three, the merchants of London did rejoice greatly, for the exchange of goods did bring forth much money, enriching the coffers of our fair city.", "In this year of grace, fifteen hundred and eighty-three, the humble folk of our village did kneel in prayer, seeking the mercy and blessings of Christ, the Redeemer of mankind."]
+
+    categoryKeyword_embeddings = getContextualEmbeddings(keywords, sentenceKeyword, tokenizer, model)
+    print(categoryKeyword_embeddings)
+    calculate_keyword_similarity(categoryKeyword_embeddings)
+
     sentenceTok, wordTok = loadCleanTokenize(textPath, encodingMethods)
     documentWordEmbedding = getWordEmbeddings(sentenceTok, wordTok, tokenizer, model)
-    keywordEmbed = keywordEmbedding(keywords, tokenizer, model)
-    calculate_keyword_similarity(keywordEmbed)
+    # keywordEmbed = keywordEmbedding(keywords, tokenizer, model)
 
-    documentScore(documentWordEmbedding, keywords, tokenizer, model)
+    # documentScore(documentWordEmbedding, keywords, tokenizer, model)
+    documentScore(documentWordEmbedding, keywords, categoryKeyword_embeddings)
+
     wordList, embeddings, labels = wordClusteringSingleDocument(documentWordEmbedding, kmeansClusterCount)
-    
-    # visualizeClusters(wordList, embeddings,labels)
-
-
-    # money_embeddings = getContextualEmbeddings("posterity", sentenceTok, wordTok, tokenizer, model)
-    # print(f"money embed: {money_embeddings}")
-    # christendom_embeddings = getContextualEmbeddings("seminary", sentenceTok, wordTok, tokenizer, model)
-    # print(f"christendom embed: {christendom_embeddings}")
-
-    # # Calculate similarities between contextual embeddings
-    # similarities = calculate_similarity_between_contextual_words(money_embeddings, christendom_embeddings)
-    # print(similarities)

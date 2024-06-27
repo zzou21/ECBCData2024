@@ -60,7 +60,7 @@ For the JSON file in which the output data is stored, the dictionary format is:
                     sentenceContent1,
                 ]
             },
-            tag2:{}     #this means there is no content in fileName2 that is in the XML tag "tag2"
+            tag2:{}
         }
     ]
 }

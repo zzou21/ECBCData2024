@@ -82,16 +82,16 @@ def cosine_similarity_manual(v1, v2):
 
 if __name__ == "__main__":
 
-    text_path = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/data/brinsley.txt"
+    text_path = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/data/A00151.txt"
     with open(text_path, "r") as file:
         text_content = file.read()
 
-    text = "I just came from a happy party in Baltimore. It was such a joyful event and everyone was happy."
-    keywords = ["happy", "baltimore"]
+    text = "I have be full persuade upon happy experience I trust that I can never employ my thought and travel more acceptable in any earthly thing or whereby a great benefit may redound both to church and commonwealth and in some sort to every soul then in search out and set forth to the view of all the short sure and most easy entrance to all good learning and how with certain hope of good success all may proceed therein who know not the grievous complaint which to the disgrace of learning be make almost in every place the usual complaint against non-proficiency in school for the injury do to country town parent and child because in so many school the child which be the chief hope of parent and posterity be either spoil altogether or else do profit so very little where good be do how hardly it be effect common and for the most part wherein any good be do that it be ordinary effect by the endless vexation of the painful master the extreme labour and ^errour of the poor scholar with endure far overmuch and long severity now whence proceed all this but because so few of those who undertake this function a chief cause hereof want of knowledge of a right course of teach be acquaint with any good method or right order of instruction fit for a grammar school this therefore have be in my heart to show my love and duty to all sort in seek for my part to deliver the poor painful and honest mind schoolmaster from this reproach and grief the author desire to help all this and to help withal to supply this so great a want and in stead hereof my earnest desire have be to procure a perpetual benefit to all estate and degree and to procure a perpetual benefit to all posterity even to every man for his child and posterity by endeavour to make the path to all good learning more even and please in the first entrance then former age have know and thereby also in the continual proceed afterward."
+    keywords = ["commonwealth", "posterity"]
 
 
-    # Define the words to visualize
-    selected_words = ["heaven", "profit"]  # Replace with actual words
+    #select the words from the document to analyze
+    selected_words = ["christian", "labour"]
 
     # Process only the selected words
     mainTextEmbedding = processMainText(text_content, selected_words)
@@ -101,44 +101,59 @@ if __name__ == "__main__":
 
     combinedEmbedding = mainTextEmbedding + keywordEmbedding
 
+    wordHolder = []
     for word, embedding in combinedEmbedding:
-        print(f"word: {word} with vectors: {embedding[:5]}...")
+        wordHolder.append(word)
+        # print(f"word: {word} with vectors: {embedding[:5]}...")
+    print(wordHolder)
+
+
+    # keyword_embeddings = np.array([embedding for _, embedding in keywordEmbedding])
+    # keyword_labels = [word for word, _ in keywordEmbedding]
+
+    # # Extract main text embeddings and their labels
+    # main_text_embeddings = np.array([embedding.numpy() for _, embedding in mainTextEmbedding])
+    # main_text_labels = [word for word, _ in mainTextEmbedding]
+
+    # for i, keyword in enumerate(keywords):
+    #     print(f"\nCosine similarities to keyword '{keyword}':")
+    #     for word, main_embedding in zip(main_text_labels, main_text_embeddings):
+    #         similarity = cosine_similarity_manual(keyword_embeddings[i], main_embedding)
+    #         print(f"Word: {word}, Cosine Similarity: {similarity}")
 
 
 
+    embedding_data = {
+        "word": [word for word, _ in combinedEmbedding],
+        "embedding": [embedding for _, embedding in combinedEmbedding]
+    }
 
+    df = pd.DataFrame(embedding_data)
 
-    # embedding_data = {
-    #     "word": [word for word, _ in mainTextEmbedding],
-    #     "embedding": [embedding.numpy() for _, embedding in mainTextEmbedding]
-    # }
+    # Convert embeddings to a numpy array
+    embeddings = np.stack(df['embedding'].values)
 
-    # df = pd.DataFrame(embedding_data)
+    # Apply PCA to reduce to 3 dimensions
+    pca = PCA(n_components=3)
+    reduced_embeddings = pca.fit_transform(embeddings)
 
-    # # Convert filtered embeddings to a numpy array
-    # filtered_embeddings = np.stack(df['embedding'].values)
+    # Add the reduced dimensions to the DataFrame
+    df['x'] = reduced_embeddings[:, 0]
+    df['y'] = reduced_embeddings[:, 1]
+    df['z'] = reduced_embeddings[:, 2]
 
-    # # Apply PCA to reduce to 3 dimensions
-    # pca = PCA(n_components=3)
-    # reduced_embeddings = pca.fit_transform(filtered_embeddings)
+    # Create a 3D scatter plot
+    fig = plt.figure(figsize=(10, 7))
+    ax = fig.add_subplot(111, projection='3d')
 
-    # # Add the reduced dimensions to the filtered DataFrame
-    # df['x'] = reduced_embeddings[:, 0]
-    # df['y'] = reduced_embeddings[:, 1]
-    # df['z'] = reduced_embeddings[:, 2]
+    ax.scatter(df['x'], df['y'], df['z'], c='blue', marker='o')
 
-    # # Create a 3D scatter plot
-    # fig = plt.figure(figsize=(10, 7))
-    # ax = fig.add_subplot(111, projection='3d')
+    # Annotate points with their words
+    for i in range(len(df)):
+        ax.text(df['x'][i], df['y'][i], df['z'][i], df['word'][i])
 
-    # ax.scatter(df['x'], df['y'], df['z'], c='blue', marker='o')
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
 
-    # # Annotate points with their words
-    # for i in range(len(df)):
-    #     ax.text(df['x'][i], df['y'][i], df['z'][i], df['word'][i])
-
-    # ax.set_xlabel('X')
-    # ax.set_ylabel('Y')
-    # ax.set_zlabel('Z')
-
-    # plt.show(block=True)  # Ensure the plot window remains open
+    plt.show(block=True)  # Ensure the plot window remains open

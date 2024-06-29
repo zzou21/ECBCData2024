@@ -29,8 +29,8 @@ class BibleVerseComparison:
 
 '''---comment out the following lines when calling the class object from another file---'''
 
-tunedModelPath = "/Users/Jerry/Desktop/100Paramtest" #refer to the fine-tuned model. Change this pathname according to your specific use
+tunedModelPath = "/Users/Jerry/Desktop/ShuffleFullBibleModel" #refer to the fine-tuned model. Change this pathname according to your specific use
 comparisonMachine = BibleVerseComparison(tunedModelPath)
 # Exact verse from Geneva Bible: "And God made the beast of the earth according to his kinde, and the cattell according to his kinde, & euery creeping thing of the earth according to his kind: & God saw that it was good."
-testSentence = "And God mathe the beajt ov the ears , and the  according to his kinde, & euery creeeping thingss of the earths according to hiththththt kind: & God thaww that it wath jood."
+testSentence = "God mathe the beajt ov the ears , and the  according to his kinde, & euery creeeping thingss of the earths according to hiththththt kind: & God thaww that it wath jood."
 print(f"'{testSentence}' -> {comparisonMachine.checkBibleVerse(testSentence)}")

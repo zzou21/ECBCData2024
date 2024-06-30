@@ -30,9 +30,19 @@ library(ggplot2)
 # Plot the distribution
 data_cleaned |> 
   ggplot(aes(x = value)) +
-  geom_histogram(binwidth = 0.05, fill = "blue", color = "black") +
-  theme_minimal() +
-  labs(title = "Distribution of Values", x = "Value", y = "Frequency")
+  geom_histogram(binwidth = 0.05, fill = "blue4", color = "black") +
+  labs(
+    title = "More authors associate 'profit' with money, \nbut a significant number of them do not", 
+    x = "Money-Faith Inclination [-ve = Money]", 
+    y = "Frequency"
+    ) +
+  geom_vline(
+    xintercept = 0,
+    linetype = "dashed",
+    color = "lightblue",
+    size = 1
+    ) +
+  theme_minimal()
 
 ```
 

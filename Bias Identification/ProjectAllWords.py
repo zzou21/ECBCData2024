@@ -1,3 +1,7 @@
+'''This file embeds keywords and words in a file in a high-dimensional vector space. After creating an axis using the two keywords, the program will project all the words onto the axis.
+
+Author: Jerry Zou'''
+
 import nltk
 from transformers import AutoTokenizer, AutoModel
 import torch

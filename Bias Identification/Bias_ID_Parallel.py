@@ -4,8 +4,8 @@ import torch
 from transformers import AutoTokenizer, AutoModel
 import numpy as np
 import nltk
-from nltk.tokenize import sent_tokenize, word_tokenize
-from concurrent.futures import ProcessPoolExecutor, as_completed
+from nltk.tokenize import sent_tokenize
+from multiprocessing import Pool, Manager, Lock
 
 # Make sure to download the punkt tokenizer
 nltk.download('punkt')
@@ -18,9 +18,18 @@ def load_categories(json_file):
 
 # Function to read a document and break it into sentences
 def read_sentence_document(document_path):
-    with open(document_path, 'r') as f:
-        text = f.read()
-        text = text.lower()
+    encodings = ['utf-8', 'latin-1', 'cp1252']
+    for encoding in encodings:
+        try:
+            with open(document_path, 'r', encoding=encoding) as f:
+                text = f.read()
+            break  # Exit the loop if no exception was raised
+        except UnicodeDecodeError:
+            continue
+    else:
+        raise UnicodeDecodeError("Failed to read the file with any of the tried encodings.")
+        
+    text.lower()
     
     # Tokenize the text into sentences using nltk
     sentences = sent_tokenize(text)
@@ -40,8 +49,36 @@ def read_sentence_document(document_path):
     return final_sentences
 
 # Function to get word embeddings
-def get_word_embedding(chunk, tokenizer, model):
+def get_word_embedding(chunks, tokenizer, model, word):
+    word_times = {}
     word_embeddings = {}
+    for chunk in chunks:
+        
+        in_set = False
+        for token in chunk.split(" "):
+            if (token in substitute_word(word, document_dir=os.getcwd())) or (token == word):
+                in_set = True
+        if not in_set:
+            continue
+
+        inputs = tokenizer(chunk, return_tensors='pt', padding=True, truncation=True, max_length=512)
+        with torch.no_grad():
+            outputs = model(**inputs)
+        embeddings = outputs.last_hidden_state
+        for i, word in enumerate(tokenizer.convert_ids_to_tokens(inputs['input_ids'][0])):
+            if word not in word_times:
+                word_times[word] = 1
+            else:
+                word_times[word]+=1
+            if word not in word_embeddings:
+                word_embeddings[word] = embeddings[0, i, :].numpy()
+            else:
+                word_embeddings[word] = (word_embeddings[word] * (word_times[word]-1) + embeddings[0, i, :].numpy()) / word_times[word]
+    return word_embeddings
+
+def get_sentence_embedding(sentence, tokenizer, model):
+    word_embeddings = {}
+    chunk = sentence
     inputs = tokenizer(chunk, return_tensors='pt', padding=True, truncation=True, max_length=512)
     with torch.no_grad():
         outputs = model(**inputs)
@@ -51,52 +88,64 @@ def get_word_embedding(chunk, tokenizer, model):
             word_embeddings[word] = embeddings[0, i, :].numpy()
     return word_embeddings
 
-def get_single_embedding(word, tokenizer, model):
-    # Tokenize the word
-    inputs = tokenizer(word, return_tensors='pt')
-    
-    # Get the embeddings
-    with torch.no_grad():
-        outputs = model(**inputs)
-    
-    # Extract the embedding for the word
-    embeddings = outputs.last_hidden_state
-    word_embedding = embeddings[0, 1, :].numpy()  # [CLS] token is at index 0, the word is at index 1
-    return word_embedding
-
 # Compute average vector for each category
 def compute_category_embeddings(categories, tokenizer, model):
     categories_embeddings = {}
-    for category, words in categories.items():
+    for category, sentences in categories.items():
         category_embeddings = []
-        for word in words:
-            term_embedding = get_single_embedding(word, tokenizer, model)
-            category_embeddings.append(term_embedding)
+        for word, sentence in sentences.items():
+            sentence_embedding = get_sentence_embedding(sentence, tokenizer, model)
+            if word in sentence_embedding:
+                term_embedding = sentence_embedding[word]
+                category_embeddings.append(term_embedding)
         if category_embeddings:
             categories_embeddings[category] = np.mean(category_embeddings, axis=0)
+        else:
+            categories_embeddings[category] = np.zeros(model.config.hidden_size)
     return categories_embeddings
 
 # Construct bias axes
 def construct_bias_axes(category_embeddings):
     faith_bias_axis = category_embeddings["Faith"] - category_embeddings["Money"]
-    desire_bias_axis = category_embeddings["Attraction"] - category_embeddings["Repulsion"]
-    return faith_bias_axis, desire_bias_axis
+    return faith_bias_axis
+
+# Find the substitute words for the original keyword, by iterating over the standard word list
+def substitute_word(word, document_dir):
+    json_dir = os.path.join(document_dir, "standardizedwords.json")
+    standardWord = load_categories(json_dir)
+    ret = []
+    for term, equals in standardWord.items():
+        for spell in equals:
+            if spell==word:
+                ret.append(term)
+    return ret
 
 # Function to project a word onto bias axes
-def project_onto_bias_axis(word, embeddings, bias_axis, tokenizer, model):
+def project_onto_bias_axis(word, embeddings, bias_axis, document_dir):
+    projection = 0
     if word in embeddings:
         embedding = embeddings[word]
         projection = np.dot(embedding, bias_axis.T) / np.linalg.norm(bias_axis)
-        return projection
     else:
-        embedding = get_single_embedding(word, tokenizer, model)
-        projection = np.dot(embedding, bias_axis.T) / np.linalg.norm(bias_axis)
-        return projection
+        for substitute in substitute_word(word, document_dir):
+            if substitute in embeddings:
+                embedding = embeddings[substitute]
+                projection = np.dot(embedding, bias_axis.T) / np.linalg.norm(bias_axis)
+            else:
+                projection = 0
+    return projection
 
-# Main function
+# Main function to process a single document
 def process_document(args):
-    categories_json, document_path, model_name, keyword = args
-    
+    categories_json, document_path, model_name, keyword, document_directory, processed_files, lock = args
+
+    with lock:
+        if document_path in processed_files:
+            return None
+
+        # Mark the file as processed
+        processed_files.append(document_path)
+
     # Load categories
     categories = load_categories(categories_json)
     
@@ -106,39 +155,47 @@ def process_document(args):
     
     # Read and tokenize the document
     sentences = read_sentence_document(document_path)
-    embeddings = {}
-    with ProcessPoolExecutor() as executor:
-        futures = [executor.submit(get_word_embedding, chunk, tokenizer, model) for chunk in sentences]
-        for future in as_completed(futures):
-            result = future.result()
-            embeddings.update(result)
+    embeddings = get_word_embedding(sentences, tokenizer, model, keyword)
     
     # Compute category embeddings
     category_embeddings = compute_category_embeddings(categories, tokenizer, model)
-    
-    # Construct bias axes
-    faith_bias_axis, desire_bias_axis = construct_bias_axes(category_embeddings)
-    
-    # Example: Project words from the document onto bias axes
-    projection_faith = project_onto_bias_axis(keyword, embeddings, faith_bias_axis, tokenizer, model)
-    projection_desire = project_onto_bias_axis(keyword, embeddings, desire_bias_axis, tokenizer, model)
 
-    if (projection_faith is not None) and (projection_desire is not None):
-        print(f"({projection_faith}, {projection_desire})")
+    # Construct bias axes
+    faith_bias_axis = construct_bias_axes(category_embeddings)
+    
+    # Project words from the document onto bias axes
+    projection_faith = project_onto_bias_axis(keyword, embeddings, faith_bias_axis, document_directory)
+    
+    if projection_faith is not None:
+        result = f"{os.path.basename(document_path)}: {projection_faith}"
+        return result
+
+    return None
+
+# Main function
+def main(categories_json, document_directory, model_name, keyword):
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    document_paths = [os.path.join(document_directory, file_name) for file_name in os.listdir(document_directory) if os.path.isfile(os.path.join(document_directory, file_name)) and file_name[0] != "."]
+
+    # Create a manager to handle shared data
+    with Manager() as manager:
+        processed_files = manager.list()  # Shared list of processed files
+        lock = manager.Lock()  # Lock for synchronizing access to processed_files
+        
+        # Create argument list for parallel processing
+        args_list = [(categories_json, doc_path, model_name, keyword, base_dir, processed_files, lock) for doc_path in document_paths]
+        
+        # Use multiprocessing to process documents in parallel
+        with Pool(processes=10) as pool:
+            for result in pool.imap_unordered(process_document, args_list):
+                if result is not None:
+                    print(result)
 
 # Now this is the main; feel free to change the following directory where fit
-base_dir = os.path.dirname(os.path.abspath(__file__))
-
-keyword = "profit"
-categories_json = "categorized_words.json"
-model_name = "finetuned_MacBERTh_Bible"
-document_directory = os.path.join(base_dir, '..', 'EEBOphase2_1590-1639_body_texts')
-
-args_list = [(categories_json, os.path.join(document_directory, file_name), model_name, keyword) 
-             for file_name in os.listdir(document_directory) 
-             if os.path.isfile(os.path.join(document_directory, file_name))]
-
-with ProcessPoolExecutor() as executor:
-    futures = [executor.submit(process_document, args) for args in args_list]
-    for future in as_completed(futures):
-        future.result()
+if __name__ == "__main__":
+    categories_json = "categorized_words.json"
+    model_name = "emanjavacas/MacBERTh"
+    document_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'EEBOphase2_1590-1639_body_texts')
+    keyword = "profit"
+    
+    main(categories_json, document_directory, model_name, keyword)

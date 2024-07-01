@@ -156,28 +156,20 @@ def main(categories_json, document_path, model_name, keyword, document_directory
     # Example: Project words from the document onto bias axes
     projection_faith = project_onto_bias_axis(keyword, embeddings, faith_bias_axis, document_directory)
     
-    result_file = os.path.join(document_directory, "./data/projection_result.txt")
     if (projection_faith is not None):
-        result = f"{os.path.basename(document_path)}: {projection_faith}\n"
-        with open(result_file, 'a') as f:
-            f.write(result)
+        print( f"{os.path.basename(document_path)}: {projection_faith}\n")
 
 # Now this is the main; feel free to change the following directory where fit
-base_dir = os.getcwd()
+base_dir = os.path.dirname(os.path.abspath(__file__))
 
 keyword = "profit"
-categories_json = os.path.join(base_dir, './data/categorized_words.json')
-# model_name = "finetuned_MacBERTh_Bible"
-model_name = model_name = os.path.join('emanjavacas/MacBERTh')
-
-document_directory = os.path.join('/Users/lucasma/Downloads/EEBOphase2_1590-1639_body_texts')
-
-result = load_categories(os.path.join(base_dir, "./data/output_projection.json"))
+categories_json = "categorized_words.json"
+model_name = "emanjavacas/MacBERTh"
+document_directory = os.path.join(base_dir, '..', 'EEBOphase2_1590-1639_body_texts')
+document_directory = os.path.join(base_dir, categories_json)
 
 for file_name in os.listdir(document_directory):
     document_path = os.path.join(document_directory, file_name)
-    if file_name in result:
-        continue
 
     # Ensure it's a file (not a subdirectory)
     if os.path.isfile(document_path) and document_path[0] != ".":

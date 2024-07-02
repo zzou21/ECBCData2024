@@ -1,4 +1,8 @@
-'''This file will find the words surrounding a certain keywords to create a Cone-of-Words using the TF-IDF words identified in 2023.
+'''This file will find the words surrounding a certain keywords to create a Cone-of-Words using the TF-IDF words identified in 2023. In the "comparison" function, it selects 20 of the top similar words (change the number to how many you'd like). The function creates a dictionary in the following format:
+
+{"keyword": {"wordFromDocument": [similarityScore, "sentence where the word is from", index number of the sentence in the sentence tokenizeation variable of that file]}, "second word from document":[]}
+
+This dictionary is then stored in a JSON file.
 
 Author: Jerry Zou'''
 
@@ -107,16 +111,19 @@ class findConeOfWords:
             similarities = []
             for mainTextWord, mainTextWordCoordiantes, mainTextSentence, mainTextSentenceIndex in mainTextEmbeddingResults:
                 similarity = cosine_similarity(keywordCoordinates.unsqueeze(0), mainTextWordCoordiantes.unsqueeze(0)).item()
-
                 # oneSimilarityScore = self.calculatingCosineSimilarity(keywordCoordinates, mainTextWordCoordiantes)
                 similarities.append((mainTextWord, similarity, mainTextSentence, mainTextSentenceIndex))
-
             similarities = sorted(similarities, key=lambda x: x[1], reverse=True)
 
             for mainTextWord, similarityScore, mainTextSentence, mainTextSentenceIndex in similarities:
+                # mainTextSentenceSplit = mainTextSentence.split()
+                # print(f"For word: {mainTextWord}; mainTextSentencesplit {mainTextSentenceSplit}")
+                # indexOfWord = mainTextSentenceSplit.index(mainTextWord)
+                # previousHalfSentence = " ".join(mainTextSentence[indexOfWord-10:indexOfWord])
+                # laterHalfSentence = " ".join(mainTextSentenceSplit[indexOfWord:indexOfWord+10])
+                # mainTextSentence = " ".join(["...", previousHalfSentence, laterHalfSentence, "..."])
                 if keyword not in resultDictionary:
                     resultDictionary[keyword] = {}
-                
                 if mainTextWord not in resultDictionary[keyword]:
                     resultDictionary[keyword][mainTextWord] = []
                 
@@ -137,17 +144,6 @@ class findConeOfWords:
                     print(f"Word: '{wordFromMainText}' has a similarity score of {listMetadata[0][0]} in sentence '{listMetadata[0][1]}'.")
         with open(self.storageJSON, "w") as storageJSON:
             json.dump(resultDictionary, storageJSON, indent=4)
-        
-
-        # min_val = None
-        # max_val = None
-        # for elem in result:
-        #     float_elem = float(elem[2]) 
-        #     if min_val is None or float_elem < min_val: 
-        #         min_val = float_elem 
-        #     if max_val is None or float_elem > max_val: 
-        #         max_val = float_elem
-        # print(f"minimum score: {min_val}; maxinum score: {max_val}.")
 
 if __name__ == "__main__":
     tokenizer = AutoTokenizer.from_pretrained("emanjavacas/MacBERTh")
@@ -156,5 +152,4 @@ if __name__ == "__main__":
     keywordJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/data/OneLevelKeywordSentence.json"
     storageJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/Bias Identification/CosSimWordClusterResult.json"
     findWordCone = findConeOfWords(filePath, keywordJSONPath, storageJSONPath, model, tokenizer)
-    # print(findWordCone.processEmbeddingMainContent())
     findWordCone.comparison()

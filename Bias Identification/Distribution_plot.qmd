@@ -20,7 +20,8 @@ data$value <- as.numeric(data$value)
 
 ```{r}
 data_cleaned <- data |>
-  filter(value != 0)
+  distinct() |>
+  filter(value != 0) 
 ```
 
 
@@ -43,6 +44,14 @@ data_cleaned |>
     size = 1
     ) +
   theme_minimal()
+```
+
+
+```{r}
+
+data_cleaned |> 
+  write.csv("../data/profit_projections.csv", row.names = FALSE)
 
 ```
+
 

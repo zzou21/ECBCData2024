@@ -5,7 +5,14 @@ import torch
 from transformers import AutoTokenizer, AutoModel
 import numpy as np
 import nltk
+from nltk.corpus import stopwords
 from nltk.tokenize import sent_tokenize, word_tokenize
+
+# Download the stopwords corpus if you haven't already
+nltk.download('stopwords')
+
+# Get the English stop words
+stop_words = set(stopwords.words('english'))
 
 # Make sure to download the punkt tokenizer
 nltk.download('punkt')
@@ -56,12 +63,14 @@ def get_word_embedding(chunks, tokenizer, model):
         with torch.no_grad():
             outputs = model(**inputs)
         embeddings = outputs.last_hidden_state
-        for embedding in embeddings[0]:
-            word_embeddings.append(embedding.numpy())
+        for i, word in enumerate(tokenizer.convert_ids_to_tokens(inputs['input_ids'][0])):
+            if word not in stop_words:
+                word_embeddings.append(embeddings[0, i, :].numpy())
     return word_embeddings
 
-def get_word_embedding_with_word(chunk, tokenizer, model):
+def get_sentence_embedding(sentence, tokenizer, model):
     word_embeddings = {}
+    chunk = sentence
     inputs = tokenizer(chunk, return_tensors='pt', padding=True, truncation=True, max_length=512)
     with torch.no_grad():
         outputs = model(**inputs)
@@ -71,58 +80,31 @@ def get_word_embedding_with_word(chunk, tokenizer, model):
             word_embeddings[word] = embeddings[0, i, :].numpy()
     return word_embeddings
 
-"""def get_single_embedding(word, tokenizer, model):
-    # Tokenize the word
-    inputs = tokenizer(word, return_tensors='pt')
-    
-    # Get the embeddings
-    with torch.no_grad():
-        outputs = model(**inputs)
-    
-    # Extract the embedding for the word
-    embeddings = outputs.last_hidden_state
-    word_embedding = embeddings[0, 1, :].numpy()  # [CLS] token is at index 0, the word is at index 1
-    return word_embedding"""
-
 # Compute average vector for each category
-def compute_category_embeddings(m,f, tokenizer, model):
-    '''categories_embeddings = {}
-    for category, words in categories.items():
+def compute_category_embeddings(categories, tokenizer, model):
+    categories_embeddings = {}
+    for category, sentences in categories.items():
         category_embeddings = []
-        for word in words:
-            term_embedding = get_single_embedding(word, tokenizer, model)
-            category_embeddings.append(term_embedding)
-        categories_embeddings[category] = np.mean(category_embeddings, axis=0)
-    return categories_embeddings'''
-    categories_embedding = {}
-    money_dic = get_word_embedding_with_word(m, tokenizer, model)
-    print('money' in money_dic)
-    money = money_dic["money"]
-    faith_dic = get_word_embedding_with_word(f, tokenizer, model)
-    print('christ' in faith_dic)
-    faith = faith_dic["christ"]
-    categories_embedding["Money"] = money
-    categories_embedding["Faith"] = faith
-    return categories_embedding
+        for word, sentence in sentences.items():
+            sentence_embedding = get_sentence_embedding(sentence, tokenizer, model)
+            if word in sentence_embedding:
+                term_embedding = sentence_embedding[word]
+                category_embeddings.append(term_embedding)
+        if category_embeddings:
+            categories_embeddings[category] = np.mean(category_embeddings, axis=0)
+        else:
+            categories_embeddings[category] = np.zeros(model.config.hidden_size)
+    return categories_embeddings
 
 
 # Construct bias axes
 def construct_bias_axes(category_embeddings):
     faith_bias_axis = category_embeddings["Faith"] - category_embeddings["Money"]
-    f = category_embeddings["Faith"]
-    m = category_embeddings["Money"]
-
-    dot = np.dot(f.T, m)
-    print(dot / (np.linalg.norm(f) * np.linalg.norm(m)))
     return faith_bias_axis
 
 # Function to project a word onto bias axes
-def project_onto_bias_axis(embeddings, bias_axis):
-    projections = []
-    for vector in embeddings:
-            projection = np.dot(vector, bias_axis.T) / np.linalg.norm(bias_axis)
-            projections.append(projection)
-    return projections
+def project_onto_bias_axis(embedding, bias_axis):
+    return np.dot(embedding, bias_axis.T) / np.linalg.norm(bias_axis)
 
 # Main function
 def main(categories_json, document_path, model_name):
@@ -138,16 +120,15 @@ def main(categories_json, document_path, model_name):
     embeddings = get_word_embedding(sentences, tokenizer, model)
 
     # Compute category embeddings
-    # category_embeddings = compute_category_embeddings(categories, embeddings, tokenizer, model)
-    money_sent = "In this year of our Lord, fifteen hundred and eighty-three, the merchants of London did rejoice greatly, for the exchange of goods did bring forth much money, enriching the coffers of our fair city."
-    faith_sent = "In this year of grace, fifteen hundred and eighty-three, the humble folk of our village did kneel in prayer, seeking the mercy and blessings of Christ, the Redeemer of mankind."
-    category_embeddings = compute_category_embeddings(money_sent, faith_sent, tokenizer, model)
+    category_embeddings = compute_category_embeddings(categories, tokenizer, model)
 
     # Construct bias axes
     faith_bias_axis = construct_bias_axes(category_embeddings)
     
     # Example: Project words from the document onto bias axes
-    projection_faith = project_onto_bias_axis(embeddings, faith_bias_axis)
+    projection_faith = [project_onto_bias_axis(embedding, faith_bias_axis) for embedding in embeddings]
+
+    print(projection_faith)
 
     if (projection_faith is not None):
         print(f"{os.path.basename(document_path)}: ({statistics.median(projection_faith)})\n")
@@ -158,10 +139,8 @@ base_dir = os.getcwd()
 
 categories_json = os.path.join(base_dir, 'data/categorized_words.json')
 
-# model_name = os.path.join(base_dir, 'data/fine-tuned-MacBERTh')
 model_name = 'emanjavacas/MacBERTh'
 
-
-document_directory = os.path.join(base_dir, 'data/copland_spellclean.txt')
+document_directory = os.path.join(base_dir, 'data/A00151.txt')
 
 main(categories_json, document_directory, model_name)

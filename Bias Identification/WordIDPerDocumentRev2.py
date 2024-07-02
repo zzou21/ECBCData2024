@@ -108,52 +108,52 @@ if __name__ == "__main__":
     print(wordHolder)
 
 
-    # keyword_embeddings = np.array([embedding for _, embedding in keywordEmbedding])
-    # keyword_labels = [word for word, _ in keywordEmbedding]
+    keyword_embeddings = np.array([embedding for _, embedding in keywordEmbedding])
+    keyword_labels = [word for word, _ in keywordEmbedding]
 
-    # # Extract main text embeddings and their labels
-    # main_text_embeddings = np.array([embedding.numpy() for _, embedding in mainTextEmbedding])
-    # main_text_labels = [word for word, _ in mainTextEmbedding]
+    # Extract main text embeddings and their labels
+    main_text_embeddings = np.array([embedding.numpy() for _, embedding in mainTextEmbedding])
+    main_text_labels = [word for word, _ in mainTextEmbedding]
 
-    # for i, keyword in enumerate(keywords):
-    #     print(f"\nCosine similarities to keyword '{keyword}':")
-    #     for word, main_embedding in zip(main_text_labels, main_text_embeddings):
-    #         similarity = cosine_similarity_manual(keyword_embeddings[i], main_embedding)
-    #         print(f"Word: {word}, Cosine Similarity: {similarity}")
+    for i, keyword in enumerate(keywords):
+        print(f"\nCosine similarities to keyword '{keyword}':")
+        for word, main_embedding in zip(main_text_labels, main_text_embeddings):
+            similarity = cosine_similarity_manual(keyword_embeddings[i], main_embedding)
+            print(f"Word: {word}, Cosine Similarity: {similarity}")
 
 
 
-    embedding_data = {
-        "word": [word for word, _ in combinedEmbedding],
-        "embedding": [embedding for _, embedding in combinedEmbedding]
-    }
+    # embedding_data = {
+    #     "word": [word for word, _ in combinedEmbedding],
+    #     "embedding": [embedding for _, embedding in combinedEmbedding]
+    # }
 
-    df = pd.DataFrame(embedding_data)
+    # df = pd.DataFrame(embedding_data)
 
-    # Convert embeddings to a numpy array
-    embeddings = np.stack(df['embedding'].values)
+    # # Convert embeddings to a numpy array
+    # embeddings = np.stack(df['embedding'].values)
 
-    # Apply PCA to reduce to 3 dimensions
-    pca = PCA(n_components=3)
-    reduced_embeddings = pca.fit_transform(embeddings)
+    # # Apply PCA to reduce to 3 dimensions
+    # pca = PCA(n_components=3)
+    # reduced_embeddings = pca.fit_transform(embeddings)
 
-    # Add the reduced dimensions to the DataFrame
-    df['x'] = reduced_embeddings[:, 0]
-    df['y'] = reduced_embeddings[:, 1]
-    df['z'] = reduced_embeddings[:, 2]
+    # # Add the reduced dimensions to the DataFrame
+    # df['x'] = reduced_embeddings[:, 0]
+    # df['y'] = reduced_embeddings[:, 1]
+    # df['z'] = reduced_embeddings[:, 2]
 
-    # Create a 3D scatter plot
-    fig = plt.figure(figsize=(10, 7))
-    ax = fig.add_subplot(111, projection='3d')
+    # # Create a 3D scatter plot
+    # fig = plt.figure(figsize=(10, 7))
+    # ax = fig.add_subplot(111, projection='3d')
 
-    ax.scatter(df['x'], df['y'], df['z'], c='blue', marker='o')
+    # ax.scatter(df['x'], df['y'], df['z'], c='blue', marker='o')
 
-    # Annotate points with their words
-    for i in range(len(df)):
-        ax.text(df['x'][i], df['y'][i], df['z'][i], df['word'][i])
+    # # Annotate points with their words
+    # for i in range(len(df)):
+    #     ax.text(df['x'][i], df['y'][i], df['z'][i], df['word'][i])
 
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Z')
+    # ax.set_xlabel('X')
+    # ax.set_ylabel('Y')
+    # ax.set_zlabel('Z')
 
-    plt.show(block=True)  # Ensure the plot window remains open
+    # plt.show(block=True)  # Ensure the plot window remains open

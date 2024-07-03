@@ -1,29 +1,38 @@
+'''This class object turns XMLs into TXT.
+
+Author: Jerry Zou'''
 import re, os, json, xml.etree.ElementTree as ET
 
 class XMLtoTXT:
-    def __init__ (self, folderPath1, folderPath2, infoAboutDesignatedFilesToUse, txtExportFolder):
+    def __init__ (self, folderPath1, folderPath2, infoAboutDesignatedFilesToUse, txtExportFolder, listOfXMLTagsToIgnore, listOfXMlDIVTypes):
         # "infoAboutDesignatedFilesToUse" has to be a JSON file path name. If the information about which specific files to iterate through is not a JSON file, change the code in the beginning of the "iterateFolder" function to accomodate.
         self.folderPath = [folderPath1, folderPath2] #Folder path name to whichever folder that holds the XML files.
         self.infoAboutDesignatedFilesToUse = infoAboutDesignatedFilesToUse
+        self.txtExportFolder = txtExportFolder
+        self.listOfXMLTagsToIgnore = listOfXMLTagsToIgnore
         self.designatedFilesToUse = [] #A list of file names in the folder that the user want to operate on. Could be empty.
-        # self.AllFileNamesToOperate = [] #Holds all file names to operate on
+        self.listOfXMlDIVTypes = listOfXMlDIVTypes
 
-    def XMLtoTXT(self, originalPath):
+    def toTXT(self, originalPath):
         tree = ET.parse(originalPath)
         root = tree.getroot()
 
         def extractText(element):
             texts = []
-            if element.text:
-                texts.append(element.text.strip())
-            for child in element:
-                texts.extend(extractText(child))
-            if element.tail:
-                texts.append(element.tail.strip())
+            if element.tag not in self.listOfXMLTagsToIgnore and not (element.tag == "DIV1" and element.get("TYPE") in self.listOfXMlDIVTypes):
+                if element.text:
+                    texts.append(element.text.strip())
+                for child in element:
+                    texts.extend(extractText(child))
+                if element.tail:
+                    texts.append(element.tail.strip())
             return texts
         
         allText = extractText(root)
         combined = " ".join(allText)
+        combined = combined.replace("\n", " ")
+        combined = combined.replace("\r", " ")
+        combined = " ".join(combined.split())
         return combined
 
     def iterateFolder(self):
@@ -51,16 +60,20 @@ class XMLtoTXT:
                         else: # read all XML files in the folder when there is no designated files to read
                             fullFilePathName = os.path.join(root, fileName)
                             allFileNames.append(fullFilePathName)
-            print(allFileNames)
-            # for filePath in allFileNames:
+        # print(allFileNames)
 
+        for filePath in allFileNames:
+            inTextFormat = self.toTXT(filePath)
+            newTXTFilePath = self.txtExportFolder + "/" + filePath.split("/")[-1][:-7] + ".txt"
+            with open(newTXTFilePath, "w") as newTXT:
+                newTXT.write(inTextFormat)
 
 if __name__ == "__main__":
     folderPath1 = "/Volumes/JZ/EEBOData+2024/Original Michigan XMLs/eebo_phase1/P4_XML_TCP"
     folderPath2 = "/Volumes/JZ/EEBOData+2024/Original Michigan XMLs/eebo_phase2/P4_XML_TCP_Ph2"
-    # originalPath = "/Users/Jerry/Desktop/A0/A00002.P4.xml"
-    # TXTPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/XMLProcessingAndTraining/TurnXMLtoTXT/test1.txt"
     infoOnDesignatedJSONFiles = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/XMLProcessingAndTraining/TurnXMLtoTXT/unique_filenames.json"
-    txtExportFolder = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/XMLProcessingAndTraining/TurnXMLtoTXT/ExportedTXT"
-    XMLtoTXTObject = XMLtoTXT(folderPath1, folderPath2, infoOnDesignatedJSONFiles, txtExportFolder)
+    txtExportFolder = "/Volumes/JZ/EEBOData+2024/Original Michigan XMLs/ExportTXT"
+    listOfXMLTagsToIgnore = ["IDNO", "AVAILABILITY", "EXTENT", "PUBLICATIONSTMT", "SERIESSTMT", "NOTESSTMT", "ENCODINGDESC", "PROJECTDESC", "EDITORIALDECL", "PROFILEDESC", "REVISIONDESC", "CHANGE", "IDG", "STC", "VID"]
+    listOfXMlDIVTypes = ["title page", "table of contents", "dedication"]
+    XMLtoTXTObject = XMLtoTXT(folderPath1, folderPath2, infoOnDesignatedJSONFiles, txtExportFolder, listOfXMLTagsToIgnore, listOfXMlDIVTypes)
     XMLtoTXTObject.iterateFolder()

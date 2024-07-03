@@ -9,6 +9,8 @@ def cleanAuthor(jsonPath):
                 
                 if metadataDictionary["AUTHOR"]:
                     
+                    newAuthorList = []
+
                     for author in metadataDictionary["AUTHOR"]:
                         
                         # Rough cleaning with regular expression. Take first 2 parts as separated by comma.
@@ -35,9 +37,19 @@ def cleanAuthor(jsonPath):
                             cleaned_entry = name_part[:d_index].strip()
                             name_part = cleaned_entry
 
+                        # Clean end-of-line commas
+                        if name_part[len(name_part)-1]==",":
+                            name_part = name_part[:len(name_part)-1]
 
                         with open(os.path.join(currentDir, "test.txt"), "a") as f:
                             print(name_part, file=f)
+
+                        newAuthorList.append(name_part)
+
+                    metadataDictionary["AUTHOR"] = newAuthorList
+    return metadataContent
+
+        
                     
 
 
@@ -47,4 +59,6 @@ def cleanAuthor(jsonPath):
 
 currentDir = os.path.dirname(os.path.abspath(__file__))
 jsonPath = os.path.join(currentDir, "[Clean]DocumentMetadata.json")
-cleanAuthor(jsonPath)
+metadata = cleanAuthor(jsonPath)
+with open(os.path.join(currentDir, "Clean_metadata.json"), "a") as f:
+          json.dump(metadata, f, indent = 4)

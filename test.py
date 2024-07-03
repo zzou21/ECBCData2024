@@ -1,3 +1,2 @@
-a = []
-if not a:
-    print("e")
+import json
+with open("")

@@ -35,18 +35,13 @@ class metadataCleaning:
                             # fileNameListBetween.append(metadataDictionary[""])
                             fileNameListBetween[fileName[:6]] = 1
                             print("added")
-
-
-        print(f"Counter {counter}")
-        print(f"hasDate {hasDate}")
-        print(f"totalFiles {totalfiles}")
-        print(fileNameListBetween)
         return fileNameListBetween
 
 
 if __name__ == "__main__":
-    jsonPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/XMLProcessingAndTraining/ManuscriptMetadata/DocumentMetadata.json"
-    outputJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/XMLProcessingAndTraining/ManuscriptMetadata/FilesBetween15901639.json"
+    currentDir = os.getcwd()
+    jsonPath = os.path.join(currentDir, "/XMLProcessingAndTraining/ManuscriptMetadata/DocumentMetadata.json")
+    outputJSONPath = os.path.join(currentDir, "/XMLProcessingAndTraining/ManuscriptMetadata/FilesBetween15901639.json")
     # with open(outputJSONPath, "w") as file:
     #     json.dump(returnDictionary, file, indent=4)
     metadataCleaningObject = metadataCleaning(jsonPath)

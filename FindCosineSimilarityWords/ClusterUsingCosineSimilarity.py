@@ -148,8 +148,10 @@ class findConeOfWords:
 if __name__ == "__main__":
     tokenizer = AutoTokenizer.from_pretrained("emanjavacas/MacBERTh")
     model = AutoModel.from_pretrained("emanjavacas/MacBERTh")
+    
     filePath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/data/copland_spellclean.txt"
     keywordJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/data/OneLevelKeywordSentence.json"
     storageJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/Bias Identification/CosSimWordClusterResult.json"
+
     findWordCone = findConeOfWords(filePath, keywordJSONPath, storageJSONPath, model, tokenizer)
     findWordCone.comparison()

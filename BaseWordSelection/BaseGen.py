@@ -85,7 +85,7 @@ def get_single_embedding(word, tokenizer, model):
 
 # Find the substitute words for the original keyword, by iterating over the standard word list
 def substitute_word(word):
-    json_dir = "/Users/lucasma/Documents/The States/ECBC/Code/ECBCData2024/standardizedwords.json"
+    json_dir = os.path.join(base_dir, "../standardizedwords.json")
     with open (json_dir, "r") as f:
         standardWord = json.load(f)
     ret = []
@@ -163,8 +163,10 @@ tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModel.from_pretrained(model_name)
 stop_words = set(stopwords.words('english'))
 
+
+base_dir = os.path.dirname(os.path.abspath(__file__))
 # Path to the .txt file
-file_path = '/Users/lucasma/Documents/The\ States/ECBC/Code/ECBCData2024/data/VirginiaTotal.txt'
+file_path = os.path.join(base_dir, "../VirginiaTotal.txt")
 # file_path = "data/A10010_cleaned.txt"
 
 sentences = read_sentence_document(file_path)

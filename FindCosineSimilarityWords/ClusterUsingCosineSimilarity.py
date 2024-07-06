@@ -7,17 +7,18 @@ This dictionary is then stored in a JSON file.
 Author: Jerry Zou'''
 
 from transformers import AutoTokenizer, AutoModel
-import numpy as np, torch, nltk, json
+import numpy as np, torch, nltk, json, heapq
 # import torch.nn.functional as F
 from sklearn.metrics.pairwise import cosine_similarity
 
 class findConeOfWords:
-    def __init__(self, filePath, keywordJSON, storageJSON, model, tokenizer):
+    def __init__(self, filePath, keywordJSON, storageJSON, model, tokenizer, returnTopWordsCount):
         self.filePath = filePath # A file path to the manuscript being examined
         self.keywordJSON = keywordJSON # A path JSON file containing the keyword and the sentence it appears in
         self.model = model # MacBERTh
         self.tokenizer = tokenizer # MacBERTh tokenizer
         self.storageJSON = storageJSON
+        self.returnTopWordsCount = returnTopWordsCount
         self.longSentenceCounter = 0
         
     def processMainContent(self):
@@ -112,7 +113,12 @@ class findConeOfWords:
             for mainTextWord, mainTextWordCoordiantes, mainTextSentence, mainTextSentenceIndex in mainTextEmbeddingResults:
                 similarity = cosine_similarity(keywordCoordinates.unsqueeze(0), mainTextWordCoordiantes.unsqueeze(0)).item()
                 # oneSimilarityScore = self.calculatingCosineSimilarity(keywordCoordinates, mainTextWordCoordiantes)
-                similarities.append((mainTextWord, similarity, mainTextSentence, mainTextSentenceIndex))
+            if len(similarities) < self.returnTopWordsCount:
+                heapq.heappush(similarities, (similarity, mainTextWord, mainTextSentence, mainTextSentenceIndex))
+            else:
+                heapq.heappushpop(similarities, (similarity, mainTextWord, mainTextSentence, mainTextSentenceIndex))
+                # similarities.append((mainTextWord, similarity, mainTextSentence, mainTextSentenceIndex))
+
             similarities = sorted(similarities, key=lambda x: x[1], reverse=True)
 
             for mainTextWord, similarityScore, mainTextSentence, mainTextSentenceIndex in similarities:
@@ -149,9 +155,10 @@ if __name__ == "__main__":
     tokenizer = AutoTokenizer.from_pretrained("emanjavacas/MacBERTh")
     model = AutoModel.from_pretrained("emanjavacas/MacBERTh")
     
-    filePath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/data/copland_spellclean.txt"
-    keywordJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/data/OneLevelKeywordSentence.json"
-    storageJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/Bias Identification/CosSimWordClusterResult.json"
+    filePath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/data/copland_spellclean.txt" #file path to the text to perform cosine similarity analysis.
+    keywordJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/data/OneLevelKeywordSentence.json" #path to JSON file that stores the baseword and the contexual sentences.
+    storageJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/Bias Identification/CosSimWordClusterResult.json" #path to JSON file that stores the output.
+    returnTopWordsCount = 20 #Change this varaible to determine how many output cosine similarity words you'd like to see.
 
-    findWordCone = findConeOfWords(filePath, keywordJSONPath, storageJSONPath, model, tokenizer)
+    findWordCone = findConeOfWords(filePath, keywordJSONPath, storageJSONPath, model, tokenizer, returnTopWordsCount)
     findWordCone.comparison()

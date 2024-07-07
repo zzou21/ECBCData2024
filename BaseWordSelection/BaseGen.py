@@ -153,9 +153,6 @@ def find_top_similar_words(target_words, sentences, tokenizer, model, top_n):
     
     return key_sim_word
 
-# Make sure to download the punkt tokenizer
-nltk.download('punkt')
-
 model_name = "emanjavacas/MacBERTh"
 # model_name = "fine-tuned-MacBERTh"
 

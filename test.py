@@ -1,10 +1,13 @@
-import json
-with open("/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/tesetOptimizer.json", "r") as file:
-    te = json.load(file)
-for k, v in te.items():
-    for k1, v1 in v.items():
-        print(len(v1))
+# import json
+# with open("/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/tesetOptimizer.json", "r") as file:
+#     te = json.load(file)
+# for k, v in te.items():
+#     for k1, v1 in v.items():
+#         print(len(v1))
 
+l = [2, 3, 4]
+s = [5, 6, 7]
+print(l+s)
 # import heapq
 
 # # Initialize an empty heap

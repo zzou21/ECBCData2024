@@ -11,7 +11,7 @@ import numpy as np, torch, nltk, json, heapq, os
 # import torch.nn.functional as F
 from sklearn.metrics.pairwise import cosine_similarity
 
-class findConeOfWords:
+class findConeOfWordsCommonKeywordDefinition:
     def __init__(self, filePath, folderPath, keywordJSON, storageJSON, model, tokenizer, returnTopWordsCount):
         self.filePath = filePath # A file path to the manuscript being examined
         self.folderPath = folderPath # A folder path that holds the individual TXTs to be scanned. Call either folderPath or filePath, not both.
@@ -126,6 +126,7 @@ class findConeOfWords:
         resultDictionary = {}
         # filePathList = [os.path.join(self.folderPath, fileName) for fileName in os.listdir(self.folderPath) if fileName.endswith(".txt") and not fileName.startswith("._")]
         for fileName in os.listdir(self.folderPath):
+            if 
             if fileName.endswith(".txt") and not fileName.startswith("._"):
                 filePath = os.path.join(self.folderPath, fileName)
                 keywordEmbeddingResults = self.processKeywords()
@@ -168,7 +169,7 @@ if __name__ == "__main__":
     storageJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/tesetOptimizer.json" #path to JSON file that stores the output.
     returnTopWordsCount = 20 # Number of output cosine similarity words you'd like to see.
 
-    findWordCone = findConeOfWords(filePath, folderPath, keywordJSONPath, storageJSONPath, model, tokenizer, returnTopWordsCount) #initiates Python object
-    
-    findWordCone.comparison()
+    #This ob
+    findWordConeCommon = findConeOfWordsCommonKeywordDefinition(filePath, folderPath, keywordJSONPath, storageJSONPath, model, tokenizer, returnTopWordsCount) #initiates Python class object
+    findWordConeCommon.comparison()
     # findWordCone.selectKeywordToUseInterface()

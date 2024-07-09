@@ -46,16 +46,14 @@ head(df_va)
 
 ```{r}
 
-set.seed(123) # For reproducibility
-
-point <- df_va |> nrow()
+set.seed(27708) # For reproducibility
 
 # Standardization
 df_k <- df_va |>
   mutate(
-    P_christ = rnorm(point),
-    P_edu = rnorm(point),
-    P_clothes = rnorm(point)
+    P_christ = scale(P_christ),
+    P_edu = scale(P_edu),
+    P_clothes = scale(P_clothes)
   )
 
 # Function to determine the optimal number of clusters using the elbow method
@@ -85,8 +83,8 @@ par(mfrow = c(1, 1))
 # Apply K-means clustering
 k <- 3
 kmeans_P1 <- kmeans(matrix(df_k$P_christ, ncol = 1), centers = k, nstart = 25)
-kmeans_P2 <- kmeans(matrix(df_k$P_edu, ncol = 1), centers = k, nstart = 25)
-kmeans_P3 <- kmeans(matrix(df_k$P_clothes, ncol = 1), centers = k, nstart = 25)
+kmeans_P2 <- kmeans(matrix(df_k$P_edu, ncol = 1), centers = 4, nstart = 25)
+kmeans_P3 <- kmeans(matrix(df_k$P_clothes, ncol = 1), centers = 4, nstart = 25)
 
 # Add the cluster assignments to the original data frame
 df_clustered_k <- df_k |> 
@@ -106,16 +104,55 @@ clustered <- df_clustered_k
 merged_df <- df_va |>
   left_join(clustered, by = "Filename") 
 
+merged_df <- merged_df |>
+  mutate(
+    cluster_P1 = as.character(cluster_P1),
+    cluster_P2 = as.character(cluster_P2),
+    cluster_P3 = as.character(cluster_P3)
+  ) 
+
 head(merged_df)
 
+# Below is the first projection
+
 merged_df |>
-  ggplot(aes(x = P_christ.x, y = 0, color = cluster_P1)) +  # Set y to a constant value
-  geom_point(position = position_jitter(height = 0.05), size = 2) +  # Add jitter to y to slightly separate points
+  ggplot(aes(x = P_christ.x, color = cluster_P1)) +  
+  geom_density() +
+  geom_jitter(aes(y = 0), width = 0, height = 0.1, size = 0.5) + 
   theme_minimal() +
   labs(title = "One-Dimensional Scatterplot",
        x = "P_christ",
        y = "") +
-  theme(axis.title.y = element_blank(),  # Remove y-axis title
-        axis.text.y = element_blank(),   # Remove y-axis text
-        axis.ticks.y = element_blank())  # Remove y-axis ticks
+  theme(axis.title.y = element_blank(),  
+        axis.text.y = element_blank(),   
+        axis.ticks.y = element_blank())
+
+
+# Below is the second projection
+
+merged_df |>
+  ggplot(aes(x = P_edu.x, color = cluster_P2)) +  
+  geom_density() +
+  geom_jitter(aes(y = 0), width = 0, height = 0.1, size = 0.5) + 
+  theme_minimal() +
+  labs(title = "One-Dimensional Scatterplot",
+       x = "P_edu",
+       y = "") +
+  theme(axis.title.y = element_blank(),  
+        axis.text.y = element_blank(),   
+        axis.ticks.y = element_blank())
+
+# Below is the third projection
+
+merged_df |>
+  ggplot(aes(x = P_clothes.x, color = cluster_P3)) +  
+  geom_density() +
+  geom_jitter(aes(y = 0), width = 0, height = 0.2, size = 0.5) + 
+  theme_minimal() +
+  labs(title = "One-Dimensional Scatterplot",
+       x = "P_clothes",
+       y = "") +
+  theme(axis.title.y = element_blank(),  
+        axis.text.y = element_blank(),   
+        axis.ticks.y = element_blank())
 ```

@@ -75,7 +75,7 @@ def get_word_embedding(chunks, tokenizer, model, word):
                 word_embeddings[word] = embeddings[0, i, :].numpy()
             else:
                 word_embeddings[word] = (word_embeddings[word] * (word_times[word]-1) + embeddings[0, i, :].numpy()) / word_times[word]
-    print(ever_in)
+    
     return word_embeddings
 
 def get_sentence_embedding(sentence, tokenizer, model):

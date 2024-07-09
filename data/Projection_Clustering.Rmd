@@ -1,0 +1,43 @@
+[**Performing Clustering on Projection Results**]{style="font-family: Arial; font-size: 14pt;"}
+
+**Author: Lucas Ma**
+
+To begin, load relevant packages to be used for analysis.
+
+```{r}
+library(dplyr)
+library(tidyverse)
+```
+
+First, perform initial data cleaning from a .txt file to a data frame. The below df_va dataframe is one that has removed all unnecessary original formatting as well as texts in which the term "Virginia" does not directly or indirectly appear.
+
+```{r}
+# Load the text file as a data frame
+df <- read.table("projection_result.txt", header = FALSE, sep = "\t", stringsAsFactors = FALSE)
+
+# View the first few rows of the data frame
+head(df)
+
+df_split <- df |> 
+  separate(V1,into = c("Filename", "Projections"), sep = ": ")
+
+df_split$Projections <- df_split$Projections |>
+  str_replace_all("\\[|\\]", "")
+
+head(df_split)
+
+df_cleaned <- df_split |>
+  separate(Projections, into = c("P_christ", "P_edu", "P_clothes"), sep = ", ") 
+
+df_va <- df_cleaned |>
+  filter(P_christ != "0") |>
+  mutate(
+    P_christ = as.numeric(P_christ),
+    P_edu = as.numeric(P_edu),
+    P_clothes = as.numeric(P_clothes)
+  )
+
+head(df_va)
+```
+
+**Attempt 1: K-means Clustering**

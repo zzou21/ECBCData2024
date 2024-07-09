@@ -131,11 +131,11 @@ class findConeOfWordsCommonKeywordDefinition:
         for fileName in os.listdir(self.folderPath):
             if fileName.endswith(".txt") and not fileName.startswith("._"):
                 if fileName[:-4] in specificFileNameList.keys():
-                    filePath = os.path.join(self.folderPath, fileName)
+                    currentFilePath = os.path.join(self.folderPath, fileName)
                     keywordEmbeddingResults = self.processKeywords()
                     fileNameNoSuffix = fileName[:-4]
                     resultDictionary[fileNameNoSuffix] = {}
-                    mainTextEmbeddingResults = self.processEmbeddingMainContent(filePath)
+                    mainTextEmbeddingResults = self.processEmbeddingMainContent(currentFilePath)
                     for keyword, keywordCoordinates, keywordSentence in keywordEmbeddingResults:
                         similarities = []
                         for mainTextWord, mainTextWordCoordiantes, mainTextSentence, mainTextSentenceIndex in mainTextEmbeddingResults:
@@ -161,6 +161,7 @@ class findConeOfWordsCommonKeywordDefinition:
                 else:
                     print("No files match the designated list of file names.")
                     jsonDumpGreen = False
+                print(f"Currently processed {len(resultDictionary)} files.")
 
         if jsonDumpGreen:
             with open(self.storageJSON, "w") as storageJSON: json.dump(resultDictionary, storageJSON, indent=4)
@@ -176,7 +177,6 @@ if __name__ == "__main__":
     specificFilesToAnalyze = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/combined2023csvAndTFIDFFileNames.json"
     returnTopWordsCount = 20 # Number of output cosine similarity words you'd like to see.
 
-    
     findWordConeCommon = findConeOfWordsCommonKeywordDefinition(filePath, folderPath, keywordJSONPath, storageJSONPath, model, tokenizer, returnTopWordsCount, specificFilesToAnalyze) #initiates Python class object
     findWordConeCommon.comparison()
     # findWordCone.selectKeywordToUseInterface()

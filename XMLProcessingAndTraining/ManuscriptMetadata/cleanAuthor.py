@@ -49,14 +49,6 @@ def cleanAuthor(jsonPath):
                     metadataDictionary["AUTHOR"] = newAuthorList
     return metadataContent
 
-        
-                    
-
-
-
-
-
-
 currentDir = os.path.dirname(os.path.abspath(__file__))
 jsonPath = os.path.join(currentDir, "[Clean]DocumentMetadata.json")
 metadata = cleanAuthor(jsonPath)

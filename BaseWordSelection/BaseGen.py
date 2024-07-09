@@ -62,6 +62,7 @@ def get_word_embedding(chunks, tokenizer, model):
 def get_single_embedding(word, tokenizer, model):
     # Tokenize the input word
     inputs = tokenizer(word, return_tensors='pt')
+    print(f"Embedding word: {word}")
     
     # Disable gradient calculation
     with torch.no_grad():
@@ -143,11 +144,7 @@ def process_key_word(keyWord, embeddings, tokenizer, model, top_n):
 # Main function
 def find_top_similar_words(target_words, sentences, tokenizer, model, top_n):
     embeddings = clean_embedding(get_word_embedding(sentences, tokenizer, model))
-    print(type(embeddings))
-    print(embeddings)
-    for word, coordinates in embeddings.items():
-        print(type(coordinates))
-    embeddingCoordinates = {word: coordinates for word, coordiantes in embeddings.items()}
+    embeddingCoordinates = {word: coordiantes for word, coordiantes in embeddings.items()}
 
     # Use joblib to parallelize the processing of keywords
     results = Parallel(n_jobs=10)(delayed(process_key_word)(keyWord, embeddings, tokenizer, model, top_n) for keyWord in target_words)
@@ -168,33 +165,33 @@ stop_words = set(stopwords.words('english'))
 base_dir = os.path.dirname(os.path.abspath(__file__))
 # Path to the .txt file
 # file_path = os.path.join(base_dir, "../VirginiaTotal.txt")
-file_path = "/Users/Jerry/Desktop/TXTFolder/A00008.txt"
+file_path = "/Users/Jerry/Desktop/VirginiaTotal.txt"
 # file_path = "data/A10010_cleaned.txt"
 
 sentences = read_sentence_document(file_path)
 
 # Target word to find similarities with
-target_words = ["money", "christ", "light", "darkness", "clothes", "naked"]
+target_words = ["Virginia", "London"]
 
 # Find and print top 10 similar words
 top_similar_words, embeddingCoordinates = find_top_similar_words(target_words, sentences, tokenizer, model, 50)
 
-embeddingCoordinatesStorage = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/BaseWordSelection/embeddingCoordinates.json" #path to JSON file that stores the embedding locations
+# embeddingCoordinatesStorage = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/BaseWordSelection/embeddingCoordinates.json" #path to JSON file that stores the embedding locations
 
-def save_embeddings_to_json(data, file_path):
-    # Convert numpy arrays to lists
-    def convert_ndarray(obj):
-        if isinstance(obj, np.ndarray):
-            return obj.tolist()
-        raise TypeError("Object of type %s is not JSON serializable" % type(obj).__name__)
+# def save_embeddings_to_json(data, file_path):
+#     # Convert numpy arrays to lists
+#     def convert_ndarray(obj):
+#         if isinstance(obj, np.ndarray):
+#             return obj.tolist()
+#         raise TypeError("Object of type %s is not JSON serializable" % type(obj).__name__)
     
-    with open(file_path, 'w') as f:
-        json.dump(data, f, default=convert_ndarray)
+#     with open(file_path, 'w') as f:
+#         json.dump(data, f, default=convert_ndarray)
 
-save_embeddings_to_json(embeddingCoordinates, embeddingCoordinatesStorage)
+# save_embeddings_to_json(embeddingCoordinates, embeddingCoordinatesStorage)
 
-# for word, words in top_similar_words.items():
-#     print("######################################################")
-#     print(f"Top 50 words most similar to '{word}':")
-#     for (sim, relWord) in words:
-#         print(f"{relWord}: {sim}")
+for word, words in top_similar_words.items():
+    print("######################################################")
+    print(f"Top 50 words most similar to '{word}':")
+    for (sim, relWord) in words:
+        print(f"{relWord}: {sim}")

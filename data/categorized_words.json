@@ -106,6 +106,68 @@
             "mischief": "An exemplary offender is like a malicious man sick with the plague, who runs into the throng to disperse his infection, whose mischief outweighs all penalty."
         }
     ],
-    "Clothed": [],
-    "Naked": []
+    "Clothed": [
+        {
+            "clothed": "I rejoiced much, supposing there was some Christianity there. I went in boldly and found an altar very well furnished, for there in a golden cloth were the images of Christ and the Blessed Virgin, and Saint John Baptist, and two angels, the lineaments of their bodies and garments distinguished with pearl, and a great silver cross having precious stones in the corners, and the middle thereof, and many other embroiderings: and a candle burning with oil before the altar, having eight lights."
+        },
+        {
+            "robes": "Let thy fear be in his whole heart, turn him from all error, and show him the salvation of thy holy and universal church, that he may judge thy people with justice, and protect the children of the poor, and finally attain everlasting life. This prayer he speaks with a low voice, and then pronounces aloud: all praise and power to God the Father, the Son, and the Holy Ghost. The prayer being ended, he commands certain abbots to reach the imperial robe and cap."
+        },
+        {
+            "raiment": "Where they are placed, ought, and may monthly inquire, how they are used by their masters, whether they allow them competent food and raiment, while they keep them to their work, and give them that which is fit for Christians, or persons of their age and quality."
+        },
+        {
+            "apparel": "His courtiers stumbled at every step and jostled each other, as if they had been ill-sighted: and so of other princes in their apparel, precious stones, and other things, which is made to be the fashion. Hence the proverb took beginning, countries' fashion, countries' honor."
+        },
+        {
+            "shoes": "From the cigales of the Athenians, or from the Romans who wore crescents (or half moons) upon their shoes as an ensign of honor, by Martial and Pancirollus termed lunati calcei."
+        },
+        {
+            "proclamation": "We have thought fit to declare, and by our royal proclamation to publish our own judgment, and resolution in these things, which by God's assistance we purpose constantly to pursue."
+        },
+        {
+            "followers": "As for his sepulcher, he is risen, he is not there. And what then have his enemies, but what he himself would not hold, and which could not hold him? Which it hath pleased him to permit to them, that his followers might follow him to heaven in their affections and conversation."
+        },
+        {
+            "countrymen": "Here faith doth with pleasure join, And bids each cheerful heart, To this high praised enterprise, Perform a Christian part: Good countrymen be forward then And with your talents small Adventure here for good luck's sake, And grant your loves withal."
+        },
+        {
+            "papers": "I send you with this letter certain papers thereof, that your worship may rejoice in beholding the excellency wherewith it is done. One of our books of equal volume with one of theirs, most can write and read."
+        },
+        {
+            "manufacture": "The general intention of all grants by the intention of letters patents for new inventions. Letters patents, for the making of any kind of manufacture has relation to set the people on work."
+        },
+        {
+            "virtue": "So affirm that by this name God is meant a being eternal, and infinite in all perfection of goodness, wisdom, power, will, truth, virtue, glory, and all those excellencies which may be in so glorious and infinite a being. And again convertibly, that this being most perfect in infinity, eternity, goodness, wisdom, glory, etc., is God."
+        }
+    ],
+    "Naked": [
+        {
+            "ragged": "These poor younglings, lame, lousy, ragged, and almost starved, whilst each hair of their heads stands staring in the viewer's face."
+        },
+        {
+            "rude": "When first engaging with the people of the crude region, we were faced with a rude and disorderly multitude of people."
+        },
+        {
+            "barbarous": "There fell under the bloody and barbarous hands of that perfidious and inhumane people"
+        },
+        {
+            "indigent": "In regard that many thousands must perish for lack of food, and such as had wherewithal to supply their wants, in danger of spoiling, by the indigent multitude tied to tyrannous necessity"
+        },
+        {
+            "blunt": " By which rude, rough, and blunt behavior, they forced Antiochus to lay away arms and cease war."
+        },
+        {
+            "forlorn": "Their much lessening found their long-expected hopes were utterly forlorn, when lastly to the foe, their recreant backs they turned"
+        },
+        {
+            "debauched": "Some of these might join unto them, in and for that fellowship of filthiness; as here in these parts, many debauched beasts"
+        },
+        {
+            "warlike": "Without which laws, no capital punishment can keep men from revenge, especially in a warlike nation, and impatient of reproach."
+        },
+        {
+            "dejected": "They are so far inferior to other nations, or our spirits so far dejected from our ancient predecessors"
+        }
+    ]
 }

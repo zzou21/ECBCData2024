@@ -89,10 +89,33 @@ kmeans_P2 <- kmeans(matrix(df_k$P_edu, ncol = 1), centers = k, nstart = 25)
 kmeans_P3 <- kmeans(matrix(df_k$P_clothes, ncol = 1), centers = k, nstart = 25)
 
 # Add the cluster assignments to the original data frame
-df_clustered <- df_k |> 
+df_clustered_k <- df_k |> 
   mutate(cluster_P1 = kmeans_P1$cluster,
          cluster_P2 = kmeans_P2$cluster,
          cluster_P3 = kmeans_P3$cluster)
 
+head(df_clustered_k)
+```
 
+The following chunk is shared by all types of clustering for generating visualization.
+
+```{r}
+
+clustered <- df_clustered_k
+
+merged_df <- df_va |>
+  left_join(clustered, by = "Filename") 
+
+head(merged_df)
+
+merged_df |>
+  ggplot(aes(x = P_christ.x, y = 0, color = cluster_P1)) +  # Set y to a constant value
+  geom_point(position = position_jitter(height = 0.05), size = 2) +  # Add jitter to y to slightly separate points
+  theme_minimal() +
+  labs(title = "One-Dimensional Scatterplot",
+       x = "P_christ",
+       y = "") +
+  theme(axis.title.y = element_blank(),  # Remove y-axis title
+        axis.text.y = element_blank(),   # Remove y-axis text
+        axis.ticks.y = element_blank())  # Remove y-axis ticks
 ```

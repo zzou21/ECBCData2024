@@ -7,11 +7,13 @@ To begin, load relevant packages to be used for analysis.
 ```{r}
 library(dplyr)
 library(tidyverse)
+library(factoextra)
 ```
 
 First, perform initial data cleaning from a .txt file to a data frame. The below df_va dataframe is one that has removed all unnecessary original formatting as well as texts in which the term "Virginia" does not directly or indirectly appear.
 
 ```{r}
+
 # Load the text file as a data frame
 df <- read.table("projection_result.txt", header = FALSE, sep = "\t", stringsAsFactors = FALSE)
 
@@ -41,3 +43,56 @@ head(df_va)
 ```
 
 **Attempt 1: K-means Clustering**
+
+```{r}
+
+set.seed(123) # For reproducibility
+
+point <- df_va |> nrow()
+
+# Standardization
+df_k <- df_va |>
+  mutate(
+    P_christ = rnorm(point),
+    P_edu = rnorm(point),
+    P_clothes = rnorm(point)
+  )
+
+# Function to determine the optimal number of clusters using the elbow method
+find_optimal_clusters <- function(data) {
+  if (is.vector(data)) {
+    data <- matrix(data, ncol = 1)
+  }
+  wss <- (nrow(data) - 1) * sum(apply(data, 2, var))
+  for (i in 2:15) {
+    wss[i] <- sum(kmeans(data, centers = i)$withinss)
+  }
+  return(wss)
+}
+
+# Determine the number of clusters for P1, P2, and P3
+wss_P1 <- find_optimal_clusters(df_k$P_christ)
+wss_P2 <- find_optimal_clusters(df_k$P_edu)
+wss_P3 <- find_optimal_clusters(df_k$P_clothes)
+
+# Plot the elbow method for each column
+par(mfrow = c(1, 3))
+plot(1:15, wss_P1, type = "b", xlab = "Number of Clusters", ylab = "Within groups sum of squares", main = "P1")
+plot(1:15, wss_P2, type = "b", xlab = "Number of Clusters", ylab = "Within groups sum of squares", main = "P2")
+plot(1:15, wss_P3, type = "b", xlab = "Number of Clusters", ylab = "Within groups sum of squares", main = "P3")
+par(mfrow = c(1, 1))
+
+# Apply K-means clustering
+k <- 3
+kmeans_P1 <- kmeans(matrix(df_k$P_christ, ncol = 1), centers = k, nstart = 25)
+kmeans_P2 <- kmeans(matrix(df_k$P_edu, ncol = 1), centers = k, nstart = 25)
+kmeans_P3 <- kmeans(matrix(df_k$P_clothes, ncol = 1), centers = k, nstart = 25)
+
+# Add the cluster assignments to the original data frame
+df_clustered <- df_k |> 
+  mutate(cluster_P1 = kmeans_P1$cluster,
+         cluster_P2 = kmeans_P2$cluster,
+         cluster_P3 = kmeans_P3$cluster)
+
+
+```

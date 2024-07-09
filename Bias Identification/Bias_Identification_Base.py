@@ -1,5 +1,5 @@
 import json
-import os
+import os, re
 import torch
 from transformers import AutoTokenizer, AutoModel
 import numpy as np
@@ -28,7 +28,7 @@ def read_sentence_document(document_path):
     else:
         raise UnicodeDecodeError("Failed to read the file with any of the tried encodings.")
         
-    text.lower()
+    text = text.lower()
     
     # Tokenize the text into sentences using nltk
     sentences = sent_tokenize(text)
@@ -51,12 +51,14 @@ def read_sentence_document(document_path):
 def get_word_embedding(chunks, tokenizer, model, word):
     word_times = {}
     word_embeddings = {}
+    ever_in = False
     for chunk in chunks:
         
         in_set = False
-        for token in chunk.split(" "):
+        for token in re.split(r'\W+', chunk):
             if (token in substitute_word(word, document_dir=os.getcwd())) or (token == word):
                 in_set = True
+        ever_in = ever_in or in_set
         if not in_set:
             continue
 
@@ -73,6 +75,7 @@ def get_word_embedding(chunks, tokenizer, model, word):
                 word_embeddings[word] = embeddings[0, i, :].numpy()
             else:
                 word_embeddings[word] = (word_embeddings[word] * (word_times[word]-1) + embeddings[0, i, :].numpy()) / word_times[word]
+    print(ever_in)
     return word_embeddings
 
 def get_sentence_embedding(sentence, tokenizer, model):
@@ -92,21 +95,25 @@ def compute_category_embeddings(categories, tokenizer, model):
     categories_embeddings = {}
     for category, sentences in categories.items():
         category_embeddings = []
-        for word, sentence in sentences.items():
-            sentence_embedding = get_sentence_embedding(sentence, tokenizer, model)
-            if word in sentence_embedding:
-                term_embedding = sentence_embedding[word]
-                category_embeddings.append(term_embedding)
-        if category_embeddings:
-            categories_embeddings[category] = np.mean(category_embeddings, axis=0)
-        else:
-            categories_embeddings[category] = np.zeros(model.config.hidden_size)
+        for word_sentence in sentences:
+            for word, sentence in word_sentence.items():
+                sentence_embedding = get_sentence_embedding(sentence, tokenizer, model)
+                if word in sentence_embedding:
+                    term_embedding = sentence_embedding[word]
+                    category_embeddings.append(term_embedding)
+            if category_embeddings:
+                categories_embeddings[category] = np.mean(category_embeddings, axis=0)
+            else:
+                categories_embeddings[category] = np.zeros(model.config.hidden_size)
     return categories_embeddings
 
 # Construct bias axes
 def construct_bias_axes(category_embeddings):
-    faith_bias_axis = category_embeddings["Faith"] - category_embeddings["Money"]
-    return faith_bias_axis
+    faith_bias_axis = category_embeddings["Money"] - category_embeddings["Christ"]
+    education_bias_axis = category_embeddings["Light"] - category_embeddings["Darkness"]
+    clothes_bias_axis = category_embeddings["Clothed"] - category_embeddings["Naked"]
+
+    return faith_bias_axis, education_bias_axis, clothes_bias_axis
 
 # Find the substitute words for the original keyword, by iterating over the standard word list
 def substitute_word(word, document_dir):
@@ -120,19 +127,23 @@ def substitute_word(word, document_dir):
     return ret
 
 # Function to project a word onto bias axes
-def project_onto_bias_axis(word, embeddings, bias_axis, document_dir):
-    projection = 0
-    if word in embeddings:
-        embedding = embeddings[word]
-        projection = np.dot(embedding, bias_axis.T) / np.linalg.norm(bias_axis)
-    else:
-        for substitute in substitute_word(word, document_dir):
-            if substitute in embeddings:
-                embedding = embeddings[substitute]
-                projection = np.dot(embedding, bias_axis.T) / np.linalg.norm(bias_axis)
-            else:
-                projection = 0
-    return projection
+def project_onto_bias_axis(word, embeddings, a1, a2, a3, document_dir):
+    axes = [a1, a2, a3]
+    projections = []
+    for bias_axis in axes:
+        projection = 0
+        if word in embeddings:
+            embedding = embeddings[word]
+            projection = np.dot(embedding, bias_axis.T) / np.linalg.norm(bias_axis)
+        else:
+            for substitute in substitute_word(word, document_dir):
+                if substitute in embeddings:
+                    embedding = embeddings[substitute]
+                    projection = np.dot(embedding, bias_axis.T) / np.linalg.norm(bias_axis)
+                else:
+                    projection = 0
+        projections.append(projection)
+    return projections
 
 # Main function
 def main(categories_json, document_path, model_name, keyword, document_directory):
@@ -151,32 +162,31 @@ def main(categories_json, document_path, model_name, keyword, document_directory
     category_embeddings = compute_category_embeddings(categories, tokenizer, model)
 
     # Construct bias axes
-    faith_bias_axis = construct_bias_axes(category_embeddings)
+    fa, ea, ca = construct_bias_axes(category_embeddings)
     
     # Example: Project words from the document onto bias axes
-    projection_faith = project_onto_bias_axis(keyword, embeddings, faith_bias_axis, document_directory)
+    projections = project_onto_bias_axis(keyword, embeddings, fa, ea, ca, document_directory)
     
     result_file = os.path.join(document_directory, "./data/projection_result.txt")
-    if (projection_faith is not None):
-        result = f"{os.path.basename(document_path)}: {projection_faith}\n"
-        with open(result_file, 'a') as f:
-            f.write(result)
+    result = f"{os.path.basename(document_path)}: {projections}\n"
+    with open(result_file, 'a') as f:
+        f.write(result)
 
 # Now this is the main; feel free to change the following directory where fit
 base_dir = os.getcwd()
 
-keyword = "profit"
+keyword = "virginia"
 categories_json = os.path.join(base_dir, './data/categorized_words.json')
 # model_name = "finetuned_MacBERTh_Bible"
 model_name = model_name = os.path.join('emanjavacas/MacBERTh')
 
-document_directory = os.path.join('/Users/lucasma/Downloads/EEBOphase2_1590-1639_body_texts')
+document_directory = os.path.join('/Users/lucasma/Downloads/Everything')
 
-result = load_categories(os.path.join(base_dir, "./data/output_projection.json"))
+hasVirginia = load_categories(os.path.join(base_dir, "./data/HasVirginia.json"))
 
 for file_name in os.listdir(document_directory):
     document_path = os.path.join(document_directory, file_name)
-    if file_name in result:
+    if file_name not in hasVirginia:
         continue
 
     # Ensure it's a file (not a subdirectory)

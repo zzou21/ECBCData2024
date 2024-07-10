@@ -86,7 +86,7 @@ par(mfrow = c(1, 1))
 
 # Apply K-means clustering
 k <- 3
-kmeans_P1 <- kmeans(matrix(df_k$P_christ, ncol = 1), centers = k, nstart = 25)
+kmeans_P1 <- kmeans(matrix(df_k$P_christ, ncol = 1), centers = 2, nstart = 25)
 kmeans_P2 <- kmeans(matrix(df_k$P_edu, ncol = 1), centers = 4, nstart = 25)
 kmeans_P3 <- kmeans(matrix(df_k$P_clothes, ncol = 1), centers = 4, nstart = 25)
 

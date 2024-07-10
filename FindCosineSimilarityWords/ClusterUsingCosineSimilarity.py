@@ -124,7 +124,8 @@ class findConeOfWordsCommonKeywordDefinition:
         return dot_product / (norm_v1 * norm_v2)
 
     def comparison(self):
-        with open(self.specificFilesToAnalyze, "r") as specificNames: specificFileNameList = json.load(specificNames)
+        with open(self.specificFilesToAnalyze, "r") as specificNames:
+            specificFileNameList = json.load(specificNames)
         resultDictionary = {}
         jsonDumpGreen = True
         # filePathList = [os.path.join(self.folderPath, fileName) for fileName in os.listdir(self.folderPath) if fileName.endswith(".txt") and not fileName.startswith("._")]
@@ -159,8 +160,7 @@ class findConeOfWordsCommonKeywordDefinition:
                             resultDictionary[fileNameNoSuffix][keyword][mainTextWord].append((similarityScore, mainTextSentence, mainTextSentenceIndex))
                             if len(resultDictionary[fileNameNoSuffix][keyword]) > 20: break
                 else:
-                    print("No files match the designated list of file names.")
-                    jsonDumpGreen = False
+                    print(f"No files match the designated list of file names: {fileNameNoSuffix}")
                 print(f"Currently processed {len(resultDictionary)} files.")
 
         if jsonDumpGreen:
@@ -173,8 +173,8 @@ if __name__ == "__main__":
     filePath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/data/copland_spellclean.txt" #file path to the text to perform cosine similarity analysis.
     folderPath = "/Users/Jerry/Desktop/TXTFolder" #folder path to a folder that holds numerous TXT files to be scanned. Use either filePath or folderPath, not both.
     keywordJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/OneLevelKeywordSentence.json" #path to JSON file that stores the baseword and the contexual sentences.
-    storageJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/tesetOptimizer.json" #path to JSON file that stores the output.
-    specificFilesToAnalyze = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/combined2023csvAndTFIDFFileNames.json"
+    storageJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/testOutput.json" #path to JSON file that stores the output.
+    specificFilesToAnalyze = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/test.json"
     returnTopWordsCount = 20 # Number of output cosine similarity words you'd like to see.
 
     findWordConeCommon = findConeOfWordsCommonKeywordDefinition(filePath, folderPath, keywordJSONPath, storageJSONPath, model, tokenizer, returnTopWordsCount, specificFilesToAnalyze) #initiates Python class object

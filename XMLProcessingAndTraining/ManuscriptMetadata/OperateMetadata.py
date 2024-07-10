@@ -65,7 +65,6 @@ class metadataCleaning:
         with open(self.inputFullMetadataJSONPath, "w") as updateJSON:
             json.dump(metadataContent, updateJSON, indent=4)
 
-
     def cleanTitle(self):
         with open(self.inputFullMetadataJSONPath, "r") as jsonContent:
             metadataContent = json.load(jsonContent)

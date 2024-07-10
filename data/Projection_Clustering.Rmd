@@ -12,11 +12,10 @@ library(tidyverse)
 library(factoextra)
 ```
 
-First, perform initial data cleaning from a .txt file to a data frame. The below df_va dataframe is one that has removed all unnecessary original formatting as well as texts in which the term "Virginia" does not directly or indirectly appear.
+First, perform initial data cleaning. The below df_va dataframe is one that has removed all unnecessary original formatting as well as texts in which the term "Virginia" does not directly or indirectly appear.
 
-```{r}
-
-
+```{r, eval=FALSE}
+# This chunk of code is obsolete as it attempts to clean the .txt file. Now as we have the cleaned .csv file, thanks to Jerry, this chunk is no longer useful.
 
 # Load the text file as a data frame
 df <- read.table("projection_result.txt", header = FALSE, sep = "\t", stringsAsFactors = FALSE)
@@ -46,6 +45,24 @@ df_va <- df_cleaned |>
 head(df_va)
 ```
 
+```{r}
+
+df = read.csv("projectionResultTable.csv")
+
+head(df)
+
+df_va <- df |>
+  rename(
+    "Filename" = `File.Name`,
+    "P1" = `Projection..1`,
+    "P2" = `Projection..2`,
+    "P3" = `Projection..3`,
+    "Title" = `Manuscript.Title`,
+    "Year" = `Publication.Year`
+  ) |>
+  filter(P1 * P2 * P3 != 0)
+```
+
 **Attempt 1: K-means Clustering**
 
 ```{r}
@@ -55,10 +72,11 @@ set.seed(27708) # For reproducibility
 # Standardization
 df_k <- df_va |>
   mutate(
-    P_christ = scale(P_christ),
-    P_edu = scale(P_edu),
-    P_clothes = scale(P_clothes)
-  )
+    P_christ = scale(P1),
+    P_edu = scale(P2),
+    P_clothes = scale(P3)
+  ) |>
+  select(Filename, P_christ, P_edu, P_clothes)
 
 # Function to determine the optimal number of clusters using the elbow method
 find_optimal_clusters <- function(data) {
@@ -91,7 +109,7 @@ kmeans_P2 <- kmeans(matrix(df_k$P_edu, ncol = 1), centers = 4, nstart = 25)
 kmeans_P3 <- kmeans(matrix(df_k$P_clothes, ncol = 1), centers = 4, nstart = 25)
 
 # Compute silhouette values
-sil <- silhouette(kmeans_P1$cluster, dist(df_va$P_christ))
+sil <- silhouette(kmeans_P1$cluster, dist(df_va$P1))
 
 # Print silhouette summary
 summary(sil)
@@ -130,7 +148,7 @@ head(merged_df)
 # Below is the first projection
 
 merged_df |>
-  ggplot(aes(x = P_christ.x, color = cluster_P1)) +  
+  ggplot(aes(x = P1, color = cluster_P1)) +  
   geom_density() +
   geom_jitter(aes(y = 0), width = 0, height = 0.1, size = 0.5) + 
   theme_minimal() +
@@ -145,7 +163,7 @@ merged_df |>
 # Below is the second projection
 
 merged_df |>
-  ggplot(aes(x = P_edu.x, color = cluster_P2)) +  
+  ggplot(aes(x = P2, color = cluster_P2)) +  
   geom_density() +
   geom_jitter(aes(y = 0), width = 0, height = 0.1, size = 0.5) + 
   theme_minimal() +
@@ -159,7 +177,7 @@ merged_df |>
 # Below is the third projection
 
 merged_df |>
-  ggplot(aes(x = P_clothes.x, color = cluster_P3)) +  
+  ggplot(aes(x = P3, color = cluster_P3)) +  
   geom_density() +
   geom_jitter(aes(y = 0), width = 0, height = 0.2, size = 0.5) + 
   theme_minimal() +
@@ -169,6 +187,11 @@ merged_df |>
   theme(axis.title.y = element_blank(),  
         axis.text.y = element_blank(),   
         axis.ticks.y = element_blank())
+
+merged_df |>
+  select(Author, cluster_P1, cluster_P2, cluster_P3, P1, Year, Filename, P3) |>
+  arrange(cluster_P1) |>
+  filter(str_detect(Author, "Donne"))
 ```
 
 **Attempt 2: Hierarchical Clustering**
@@ -178,7 +201,7 @@ merged_df |>
 library(ggplot2)
 
 # Remove the filename column, as we are clustering based on p1
-data_for_clustering <- df_va$P_christ
+data_for_clustering <- df_va$P1
 
 # Perform hierarchical clustering
 # Compute the distance matrix

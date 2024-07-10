@@ -1,11 +1,13 @@
-[**Performing Clustering on Projection Results**]{style="font-family: Arial; font-size: 14pt;"}
-
-**Author: Lucas Ma**
+---
+title: "Clustering of Projection Results" 
+author: "Lucas Ma"
+---
 
 To begin, load relevant packages to be used for analysis.
 
 ```{r}
 library(dplyr)
+library(cluster)
 library(tidyverse)
 library(factoextra)
 ```
@@ -13,6 +15,8 @@ library(factoextra)
 First, perform initial data cleaning from a .txt file to a data frame. The below df_va dataframe is one that has removed all unnecessary original formatting as well as texts in which the term "Virginia" does not directly or indirectly appear.
 
 ```{r}
+
+
 
 # Load the text file as a data frame
 df <- read.table("projection_result.txt", header = FALSE, sep = "\t", stringsAsFactors = FALSE)
@@ -86,6 +90,13 @@ kmeans_P1 <- kmeans(matrix(df_k$P_christ, ncol = 1), centers = k, nstart = 25)
 kmeans_P2 <- kmeans(matrix(df_k$P_edu, ncol = 1), centers = 4, nstart = 25)
 kmeans_P3 <- kmeans(matrix(df_k$P_clothes, ncol = 1), centers = 4, nstart = 25)
 
+# Compute silhouette values
+sil <- silhouette(kmeans_P1$cluster, dist(df_va$P_christ))
+
+# Print silhouette summary
+summary(sil)
+
+
 # Add the cluster assignments to the original data frame
 df_clustered_k <- df_k |> 
   mutate(cluster_P1 = kmeans_P1$cluster,
@@ -93,6 +104,9 @@ df_clustered_k <- df_k |>
          cluster_P3 = kmeans_P3$cluster)
 
 head(df_clustered_k)
+
+# Visualize silhouette plot
+fviz_silhouette(sil)
 ```
 
 The following chunk is shared by all types of clustering for generating visualization.
@@ -156,3 +170,26 @@ merged_df |>
         axis.text.y = element_blank(),   
         axis.ticks.y = element_blank())
 ```
+
+**Attempt 2: Hierarchical Clustering**
+
+```{r}
+# Load necessary libraries
+library(ggplot2)
+
+# Remove the filename column, as we are clustering based on p1
+data_for_clustering <- df_va$P_christ
+
+# Perform hierarchical clustering
+# Compute the distance matrix
+dist_matrix <- dist(data_for_clustering, method = "euclidean")
+
+# Perform hierarchical clustering using complete linkage
+hc <- hclust(dist_matrix, method = "complete")
+
+# Plot the dendrogram
+plot(hc, labels = df_va$Filename, main = "Dendrogram", xlab = "Filename", sub = "", cex = 0.8)
+
+```
+
+Apparently, from the visualization, there can only be 2 branches at each level. This is problematic for our analysis because we have yet determine how many clusters we want overall, but this number is almost certainly not as simply as 2.

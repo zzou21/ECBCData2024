@@ -109,9 +109,9 @@ def compute_category_embeddings(categories, tokenizer, model):
 
 # Construct bias axes
 def construct_bias_axes(category_embeddings):
-    faith_bias_axis = category_embeddings["Money"] - category_embeddings["Christ"]
-    education_bias_axis = category_embeddings["Light"] - category_embeddings["Darkness"]
-    clothes_bias_axis = category_embeddings["Clothed"] - category_embeddings["Naked"]
+    faith_bias_axis = category_embeddings["Plantation"] - category_embeddings["London"]
+    education_bias_axis = category_embeddings["Obedience"] - category_embeddings["Treachery"]
+    clothes_bias_axis = category_embeddings["Duty"] - category_embeddings["Lazy"]
 
     return faith_bias_axis, education_bias_axis, clothes_bias_axis
 
@@ -124,6 +124,7 @@ def substitute_word(word, document_dir):
         for spell in equals:
             if spell==word:
                 ret.append(term)
+    ret = ["natiue", "natives", "natiues"]
     return ret
 
 # Function to project a word onto bias axes
@@ -175,19 +176,15 @@ def main(categories_json, document_path, model_name, keyword, document_directory
 # Now this is the main; feel free to change the following directory where fit
 base_dir = os.getcwd()
 
-keyword = "virginia"
+keyword = "natiue"
 categories_json = os.path.join(base_dir, './data/categorized_words.json')
 # model_name = "finetuned_MacBERTh_Bible"
 model_name = model_name = os.path.join('emanjavacas/MacBERTh')
 
-document_directory = os.path.join('/Users/lucasma/Downloads/Everything')
-
-hasVirginia = load_categories(os.path.join(base_dir, "./data/HasVirginia.json"))
+document_directory = os.path.join('/Users/lucasma/Downloads/AllVirginia')
 
 for file_name in os.listdir(document_directory):
     document_path = os.path.join(document_directory, file_name)
-    if file_name not in hasVirginia:
-        continue
 
     # Ensure it's a file (not a subdirectory)
     if os.path.isfile(document_path) and document_path[0] != ".":

@@ -12,7 +12,7 @@ import numpy as np, torch, nltk, json, heapq, os
 from sklearn.metrics.pairwise import cosine_similarity
 
 class findConeOfWordsCommonKeywordDefinition:
-    def __init__(self, filePath, folderPath, keywordJSON, storageJSON, model, tokenizer, returnTopWordsCount, specificFilesToAnalyze, batchWorkflowControl):
+    def __init__(self, filePath, folderPath, keywordJSON, storageJSON, model, tokenizer, returnTopWordsCount, specificFilesToAnalyze):
         self.filePath = filePath # A file path to the manuscript being examined
         self.folderPath = folderPath # A folder path that holds the individual TXTs to be scanned. Call either folderPath or filePath, not both.
         self.keywordJSON = keywordJSON # A path JSON file containing the keyword and the sentence it appears in
@@ -21,7 +21,6 @@ class findConeOfWordsCommonKeywordDefinition:
         self.storageJSON = storageJSON
         self.returnTopWordsCount = returnTopWordsCount
         self.specificFilesToAnalyze = specificFilesToAnalyze
-        self.batchWorkflowControl = batchWorkflowControl
         self.longSentenceCounter = 0
         self.selectedKeywordsToUse = {} #This dictionary holds which specific parts of the keywordJSON that the user wants to use in finding cosine similarity words.
         self.keywordsUsed = []
@@ -35,39 +34,41 @@ class findConeOfWordsCommonKeywordDefinition:
         self.longSentenceCounter += sum(1 for sentence in tokenizedSentences if len(sentence) > 1900)
         return tokenizedSentences
     
-    # def checkIfSentenceContainsAnyKeywords(self, sentence): #This function is used to optimize the program so we only need to embed the sentences that contain the keywords.
-    #     for word in self.keywordsUsed:
-    #         if word in sentence:
-    #             return True
-    #     return False
-    
+    def checkIfSentenceContainsAnyKeywords(self): #This function is used to optimize the program so we only need to embed the sentences that contain the keywords.
+        tokenizedSentences = self.processMainContent(self.filePath)
+        for sentence in tokenizedSentences:
+            for word in self.keywordsUsed:
+                if word in sentence:
+                    print(word, sentence)
+        
     def processEmbeddingMainContent(self, contentPath):
         wordEmbeddingsList = []
         sentenceToTokenize = self.processMainContent(contentPath)
         for tracker, sentence in enumerate(sentenceToTokenize):
-            sentenceTokens = self.tokenizer(sentence, return_tensors = "pt", padding = True, truncation = True, max_length = 512)
-            # print(f"sentence tokens: {sentenceTokens}")
-            with torch.no_grad():
-                outputs = self.model(**sentenceTokens)
-                tokenEmbeddings = outputs.last_hidden_state
-        
-            tokens = self.tokenizer.convert_ids_to_tokens(sentenceTokens['input_ids'][0])
-            currentWord = ""
-            embeddingOfCurrentWord = []
-            for token, embedding in zip(tokens, tokenEmbeddings[0]):
-                if token == "[PAD]" or token == "[CLS]" or token == "[SEP]":
-                    continue
-                if token.startswith("##"):
-                    currentWord += token[2:]
+            if self.checkIfSentenceContainsAnyKeywords(sentence):
+                sentenceTokens = self.tokenizer(sentence, return_tensors = "pt", padding = True, truncation = True, max_length = 512)
+                # print(f"sentence tokens: {sentenceTokens}")
+                with torch.no_grad():
+                    outputs = self.model(**sentenceTokens)
+                    tokenEmbeddings = outputs.last_hidden_state
+            
+                tokens = self.tokenizer.convert_ids_to_tokens(sentenceTokens['input_ids'][0])
+                currentWord = ""
+                embeddingOfCurrentWord = []
+                for token, embedding in zip(tokens, tokenEmbeddings[0]):
+                    if token == "[PAD]" or token == "[CLS]" or token == "[SEP]":
+                        continue
+                    if token.startswith("##"):
+                        currentWord += token[2:]
+                        embeddingOfCurrentWord.append(embedding)
+                    else:
+                        if currentWord and embeddingOfCurrentWord:
+                            wordEmbeddingsList.append((currentWord, torch.mean(torch.stack(embeddingOfCurrentWord), dim=0), sentence, tracker))
+                        currentWord = token
+                        embeddingOfCurrentWord = []
                     embeddingOfCurrentWord.append(embedding)
-                else:
-                    if currentWord and embeddingOfCurrentWord:
-                        wordEmbeddingsList.append((currentWord, torch.mean(torch.stack(embeddingOfCurrentWord), dim=0), sentence, tracker))
-                    currentWord = token
-                    embeddingOfCurrentWord = []
-                embeddingOfCurrentWord.append(embedding)
-            if currentWord:
-                wordEmbeddingsList.append((currentWord, torch.mean(torch.stack(embeddingOfCurrentWord), dim=0), sentence, tracker))
+                if currentWord:
+                    wordEmbeddingsList.append((currentWord, torch.mean(torch.stack(embeddingOfCurrentWord), dim=0), sentence, tracker))
         
         return wordEmbeddingsList
     
@@ -136,7 +137,7 @@ class findConeOfWordsCommonKeywordDefinition:
         with open(self.specificFilesToAnalyze, "r") as specificNames:
             specificFileNameList = json.load(specificNames)
         resultDictionary = {}
-        processedFilesCounter = 0
+        jsonDumpGreen = True
         # filePathList = [os.path.join(self.folderPath, fileName) for fileName in os.listdir(self.folderPath) if fileName.endswith(".txt") and not fileName.startswith("._")]
         for fileName in os.listdir(self.folderPath):
             if fileName.endswith(".txt") and not fileName.startswith("._"):
@@ -163,52 +164,29 @@ class findConeOfWordsCommonKeywordDefinition:
                         for mainTextWord, similarityScore, mainTextSentence, mainTextSentenceIndex in similarities:
                             if keyword not in resultDictionary[fileNameNoSuffix]:
                                 resultDictionary[fileNameNoSuffix][keyword] = {}
-                            if mainTextWord not in resultDictionary[fileNameNoSuffix][keyword] and mainTextWord != "christ" and mainTextWord != "christs" and mainTextWord != "light": # make sure to remove christ and christs
+                            if mainTextWord not in resultDictionary[fileNameNoSuffix][keyword]:
                                 resultDictionary[fileNameNoSuffix][keyword][mainTextWord] = []
                             
-                            if mainTextWord != "christ" and mainTextWord != "christs"  and mainTextWord != "light":
-                                resultDictionary[fileNameNoSuffix][keyword][mainTextWord].append((similarityScore, mainTextSentence, mainTextSentenceIndex))
-                            if len(resultDictionary[fileNameNoSuffix][keyword]) > self.returnTopWordsCount: break
-
-                    processedFilesCounter += 1
-                    print(f"Processed {len(resultDictionary)} files so far.")
-                    if processedFilesCounter % self.batchWorkflowControl == 0:
-                        self.workflowControl(resultDictionary)
-                        resultDictionary.clear()
-
+                            resultDictionary[fileNameNoSuffix][keyword][mainTextWord].append((similarityScore, mainTextSentence, mainTextSentenceIndex))
+                            if len(resultDictionary[fileNameNoSuffix][keyword]) > 60: break
                 else:
                     print(f"No files match the designated list of file names: {fileNameNoSuffix}")
+                print(f"Currently processed {len(resultDictionary)} files.")
 
-        self.workflowControl(resultDictionary)
-    
-    def workflowControl(self, resultDictionary):
-        fileProcessCounter = 0
-        if resultDictionary:
-            try:
-                with open(self.storageJSON, "r") as storageJSON:
-                    existingDictionary = json.load(storageJSON)
-            except (FileNotFoundError, json.JSONDecodeError):
-                existingDictionary = {}
-
-            existingDictionary.update(resultDictionary)
-
-            with open(self.storageJSON, "w") as storageJSON:
-                json.dump(existingDictionary, storageJSON, indent=4)
-            fileProcessCounter += self.batchWorkflowControl
-            print(f"Progress saved to JSON file. {fileProcessCounter} files processed.")
+        if jsonDumpGreen:
+            with open(self.storageJSON, "w") as storageJSON: json.dump(resultDictionary, storageJSON, indent=4)
 
 if __name__ == "__main__":
     tokenizer = AutoTokenizer.from_pretrained("emanjavacas/MacBERTh")
     model = AutoModel.from_pretrained("emanjavacas/MacBERTh")
     
-    filePath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/data/copland_spellclean.txt" #file path to the text to perform cosine similarity analysis.
+    filePath = "/Users/Jerry/Desktop/TXTFolder/A16864.txt" #file path to the text to perform cosine similarity analysis.
     folderPath = "/Users/Jerry/Desktop/TXTFolder" #folder path to a folder that holds numerous TXT files to be scanned. Use either filePath or folderPath, not both.
     keywordJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/temporaryJSONToFindmoreWords.json" #path to JSON file that stores the baseword and the contexual sentences.
     storageJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/temporaryOutputforRepatedWords.json" #path to JSON file that stores the output.
     specificFilesToAnalyze = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/test.json"
-    returnTopWordsCount = 60 # Number of output cosine similarity words you'd like to see.
-    batchWorkflowControl = 2 # This is the workflow control methodology so that, when processing large amount of files, it won't be storing this number of files in the computer memory.
+    returnTopWordsCount = 20 # Number of output cosine similarity words you'd like to see.
 
-    findWordConeCommon = findConeOfWordsCommonKeywordDefinition(filePath, folderPath, keywordJSONPath, storageJSONPath, model, tokenizer, returnTopWordsCount, specificFilesToAnalyze, batchWorkflowControl) #initiates Python class object
-    findWordConeCommon.comparison()
-    # findWordCone.selectKeywordToUseInterface()
+    findWordConeCommon = findConeOfWordsCommonKeywordDefinition(filePath, folderPath, keywordJSONPath, storageJSONPath, model, tokenizer, returnTopWordsCount, specificFilesToAnalyze) #initiates Python class object
+    # findWordConeCommon.comparison()
+    findWordConeCommon.checkIfSentenceContainsAnyKeywords()

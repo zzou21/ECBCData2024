@@ -45,12 +45,15 @@ class overlayMetadataToCSV:
         
         combinedList = []
 
+        dataFrameInit = {}
         for list in contentListList:
             newList = flattenList(list)
             listWithMetadata = newList + self.accessSpecificMetadata(list[0])
             combinedList.append(listWithMetadata)
-        for int in combinedList:
-            print(int)
+        for index in range(len(self.columnNames)):
+            dataFrameInit[self.columnNames[index]] = [names[index] for names in combinedList]
+        newDataFrame = pd.DataFrame(dataFrameInit)
+        newDataFrame.to_csv(self.outputCSVPath, index=False)
 
 if __name__ == "__main__":
     wd = os.getcwd()

@@ -12,14 +12,18 @@ def decode(JSONPath):
             if baseword not in decodedDictionary[fileName]:
                 decodedDictionary[fileName][baseword] = []
             for keyword, metadata in keywordMetadataDict.items():
-                decodedDictionary[fileName][baseword].append((keyword, metadata[0][0]))
+                if len(metadata) > 1:
+                    decodedDictionary[fileName][baseword].append([(keyword, score) for score, sentence, index in metadata])
+                    decodedDictionary[fileName][baseword]
+                elif len(metadata) == 1:
+                    decodedDictionary[fileName][baseword].append((keyword, metadata[0][0]))
     for fileName, content in decodedDictionary.items():
         print(f"For file: {fileName}")
         for baseword, score in content.items():
             print(f"For baseword {baseword}:")
-            print(score)
-    
+            for tuple in score:
+                print(tuple)
 
 if __name__ == "__main__":
-    codedJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/data/4FileCosSimOutput.json"
+    codedJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/tesetOptimizer.json"
     decode(codedJSONPath)

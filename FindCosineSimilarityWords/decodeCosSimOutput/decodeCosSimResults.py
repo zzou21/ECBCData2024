@@ -1,10 +1,14 @@
 '''This Python class turns cosine similarity outputted JSON (outputted from FindCosineSimilarityWords/ClusterUsingCosineSimilarity.py) into readable methods through customizable manipulation settings. This program also grabs the file metadata for each outputted JSON.
 
+Decoded self.outputJSONPath JSON file data type:
+
+{"fileName": {"Metadata": ["title String", "author String", year (as integer or list of integers], "baseword": ["returnedWord", score (float), "contextualSentence"], [["returnedWord(for duplicated words)", score (float), "contextualSentene"], ["returnedWord(for duplicated words)", score (float), "contextualSentence"]], ["returnedWord", score (float), "contextualSentence"]}, "fileName": ...}
+
 Author: Jerry Zou'''
 
 import json
 class decodeCosSimOutput:
-    def __init__ (self, inputJSONPath, auxiliaryJSONPath metadataJSONPath, outputJSONPath, batchWorkflowControl):
+    def __init__(self, inputJSONPath, auxiliaryJSONPath, metadataJSONPath, outputJSONPath, batchWorkflowControl):
         self.inputJSONPath = inputJSONPath
         self.auxiliaryJSONPath = auxiliaryJSONPath
         self.metadataJSONPath = metadataJSONPath
@@ -14,11 +18,11 @@ class decodeCosSimOutput:
     def accessMetadata(self, fileName): #This helper function finds the metadata of a manuscript. Has to be a string input, such as "A00001"
         with open(self.metadataJSONPath, "r") as metadataFile:
             metadataContent = json.load(metadataFile)
-        intendedMetadata = {}
+        intendedMetadata = None
         for phase, fileNameDictionary in metadataContent.items():
             if fileName in fileNameDictionary:
                 intendedMetadataDict = fileNameDictionary[fileName]
-        intendedMetadata["Metadata"] = [intendedMetadataDict["TITLE"], intendedMetadataDict["AUTHOR"], intendedMetadataDict["DATE"]]
+        intendedMetadata = [intendedMetadataDict["TITLE"], intendedMetadataDict["AUTHOR"], intendedMetadataDict["DATE"]]
         return intendedMetadata
 
     def workflowControl(self, resultDictionary): #workflow control.
@@ -63,7 +67,7 @@ class decodeCosSimOutput:
                         print(tuple)
 
             processedFilesCounter += 1
-            print(f"Processed {fileName}'s cosine similiarity output. {processedFilesCounter} out of {len(content)} file outputs processed.")
+            print(f"Processed {fileName}'s cosine similiarity output. {processedFilesCounter} out of {len(content)+1} file outputs processed.")
             if processedFilesCounter % self.batchWorkflowControl == 0:
                 self.workflowControl(decodedDictionary)
                 decodedDictionary.clear()

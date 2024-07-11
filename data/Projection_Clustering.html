@@ -621,13 +621,33 @@ merged_df |&gt;
 <pre class="r"><code>merged_df |&gt;
   select(Author, cluster_P1, cluster_P2, cluster_P3, P1, Year, Filename, P3) |&gt;
   arrange(cluster_P1) |&gt;
-  filter(str_detect(Author, &quot;Donne&quot;))</code></pre>
-<pre><code>##            Author cluster_P1 cluster_P2 cluster_P3        P1   Year Filename
-## 1 [&#39;Donne, John&#39;]          1          2          2 1.3328265 [1624]   A73849
-## 2 [&#39;Donne, John&#39;]          2          2          3 0.7399012 [1633]   A69225
-##           P3
-## 1 -0.1369824
-## 2 -1.1723301</code></pre>
+  filter(str_detect(Author, &quot;Copland&quot;))</code></pre>
+<pre><code>##                                Author cluster_P1 cluster_P2 cluster_P3       P1
+## 1                [&#39;Copland, Patrick&#39;]          1          3          1 1.487178
+## 2 [&#39;Copland, Patrick&#39;, &#39;Pope, Peter&#39;]          2          3          2 0.241267
+##                                               Year Filename         P3
+## 1                                           [1622]   A19312 -0.3025565
+## 2 [1622, 1622, 1620, 1619, 1620, 1620, 1619, 1620]   A19313  0.2190265</code></pre>
+<pre class="r"><code>merged_df |&gt;
+  filter(P1&lt;=0.241267) |&gt;
+  arrange(desc(P1)) |&gt;
+  select(Author)</code></pre>
+<pre><code>##                                                                             Author
+## 1                                        [&#39;Dauncey, John&#39;, &#39;Bos, Lambert van den&#39;]
+## 2                                                            [&#39;Goodall, Baptist.&#39;]
+## 3                                                                [&#39;Abbot, George&#39;]
+## 4                                                                  [&#39;White, John&#39;]
+## 5                                            [&#39;Smith, John&#39;, &#39;Pass, Simon van de&#39;]
+## 6                                                                 [&#39;Clarke, John&#39;]
+## 7                                                                      [&#39;Day, J.&#39;]
+## 8                                                               [&#39;Coffin, Edward&#39;]
+## 9                                                              [&#39;Purchas, Samuel&#39;]
+## 10                                                 [&#39;Virginia Company of London.&#39;]
+## 11                                                            [&#39;Plattes, Gabriel&#39;]
+## 12                                                  [&#39;Smith, John&#39;, &#39;Barra, John&#39;]
+## 13                                                             [&#39;Heywood, Thomas&#39;]
+## 14                                                              [&#39;Wither, George&#39;]
+## 15 [&#39;Mercator, Gerhard&#39;, &#39;Hondius, Jodocus&#39;, &#39;Saltonstall, Wye&#39;, &#39;Glover, George&#39;]</code></pre>
 <p><strong>Attempt 2: Hierarchical Clustering</strong></p>
 <pre class="r"><code># Load necessary libraries
 library(ggplot2)

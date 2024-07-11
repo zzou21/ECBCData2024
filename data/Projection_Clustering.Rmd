@@ -191,7 +191,12 @@ merged_df |>
 merged_df |>
   select(Author, cluster_P1, cluster_P2, cluster_P3, P1, Year, Filename, P3) |>
   arrange(cluster_P1) |>
-  filter(str_detect(Author, "Donne"))
+  filter(str_detect(Author, "Copland"))
+
+merged_df |>
+  filter(P1<=0.241267) |>
+  arrange(desc(P1)) |>
+  select(Author)
 ```
 
 **Attempt 2: Hierarchical Clustering**

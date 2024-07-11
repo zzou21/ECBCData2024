@@ -124,7 +124,7 @@ def substitute_word(word, document_dir):
         for spell in equals:
             if spell==word:
                 ret.append(term)
-    ret = ["native", "natives", "natiues"]
+    ret = ["uirginia"]
     return ret
 
 # Function to project a word onto bias axes
@@ -168,7 +168,7 @@ def main(categories_json, document_path, model_name, keyword, document_directory
     # Example: Project words from the document onto bias axes
     projections = project_onto_bias_axis(keyword, embeddings, fa, ea, ca, document_directory)
     
-    result_file = os.path.join(document_directory, "./data/projection_result_G1.txt")
+    result_file = os.path.join(document_directory, "./data/projection_result_G1_VA.txt")
     result = f"{os.path.basename(document_path)}: {projections}\n"
     with open(result_file, 'a') as f:
         f.write(result)
@@ -176,7 +176,7 @@ def main(categories_json, document_path, model_name, keyword, document_directory
 # Now this is the main; feel free to change the following directory where fit
 base_dir = os.getcwd()
 
-keyword = "natiue"
+keyword = "virginia"
 categories_json = os.path.join(base_dir, './data/categorized_words.json')
 # model_name = "finetuned_MacBERTh_Bible"
 model_name = model_name = os.path.join('emanjavacas/MacBERTh')

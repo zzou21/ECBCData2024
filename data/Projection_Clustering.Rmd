@@ -10,6 +10,7 @@ library(dplyr)
 library(cluster)
 library(tidyverse)
 library(factoextra)
+library(mclust)
 ```
 
 First, perform initial data cleaning. The below df_va dataframe is one that has removed all unnecessary original formatting as well as texts in which the term "Virginia" does not directly or indirectly appear.
@@ -47,7 +48,7 @@ head(df_va)
 
 ```{r}
 
-df = read.csv("projectionResultTable.csv")
+df = read.csv("projectionResultWithMetaData_G1_VA.csv")
 
 head(df)
 
@@ -103,10 +104,10 @@ plot(1:15, wss_P3, type = "b", xlab = "Number of Clusters", ylab = "Within group
 par(mfrow = c(1, 1))
 
 # Apply K-means clustering
-k <- 3
-kmeans_P1 <- kmeans(matrix(df_k$P_christ, ncol = 1), centers = 2, nstart = 25)
+k <- 4
+kmeans_P1 <- kmeans(matrix(df_k$P_christ, ncol = 1), centers = 3, nstart = 25)
 kmeans_P2 <- kmeans(matrix(df_k$P_edu, ncol = 1), centers = 4, nstart = 25)
-kmeans_P3 <- kmeans(matrix(df_k$P_clothes, ncol = 1), centers = 4, nstart = 25)
+kmeans_P3 <- kmeans(matrix(df_k$P_clothes, ncol = 1), centers = 3, nstart = 25)
 
 # Compute silhouette values
 sil <- silhouette(kmeans_P1$cluster, dist(df_va$P1))
@@ -127,11 +128,70 @@ head(df_clustered_k)
 fviz_silhouette(sil)
 ```
 
+**Attempt 3: Gaussian Mixture Models (GMM)**
+
+```{r, eval=FALSE}
+
+df_gmm <- df_va
+
+# Function to perform GMM clustering and add cluster assignments
+perform_gmm_clustering <- function(data, variable) {
+  gmm_result <- Mclust(data[[variable]])
+  data <- data |>
+    mutate(!!paste0("cluster_", variable) := gmm_result$classification)
+  return(data)
+}
+
+# Perform GMM clustering for P1
+df_gmm <- perform_gmm_clustering(df_gmm, "P1")
+
+# Perform GMM clustering for P2
+df_gmm <- perform_gmm_clustering(df_gmm, "P2")
+
+# Perform GMM clustering for P3
+df_gmm <- perform_gmm_clustering(df_gmm, "P3")
+
+```
+
+```{r, eval=FALSE}
+
+# Function to visualize clustering results
+visualize_gmm_clustering <- function(data, variable) {
+  data <- data |>
+    mutate(dummy = 1)  # Create a dummy variable for visualization
+  plot_title <- paste("GMM Clustering based on", variable)
+  
+  fviz_cluster(
+    Mclust(data |> select(all_of(variable), dummy)), 
+    geom = "point", 
+    main = plot_title
+  )
+}
+
+
+
+# Visualize clustering results for P1
+visualize_gmm_clustering(df_gmm, "P1")
+
+# Visualize clustering results for P2
+visualize_gmm_clustering(df_gmm, "P2")
+
+# Visualize clustering results for P3
+visualize_gmm_clustering(df_gmm, "P3")
+
+head (df_gmm)
+
+df_gmm
+
+```
+
 The following chunk is shared by all types of clustering for generating visualization.
 
 ```{r}
 
 clustered <- df_clustered_k
+
+# clustered <- df_gmm
 
 merged_df <- df_va |>
   left_join(clustered, by = "Filename") 
@@ -188,15 +248,12 @@ merged_df |>
         axis.text.y = element_blank(),   
         axis.ticks.y = element_blank())
 
-merged_df |>
-  select(Author, cluster_P1, cluster_P2, cluster_P3, P1, Year, Filename, P3) |>
-  arrange(cluster_P1) |>
-  filter(str_detect(Author, "Copland"))
+glimpse(merged_df)
 
 merged_df |>
-  filter(P1<=0.241267) |>
-  arrange(desc(P1)) |>
-  select(Author)
+  select(Author, Year, Filename, cluster_P1, cluster_P2, cluster_P3, P1, P2, P3) |>
+  filter(str_detect(Author, "Donne"))
+  #filter(P1<0.2413)
 ```
 
 **Attempt 2: Hierarchical Clustering**

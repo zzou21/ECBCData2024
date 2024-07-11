@@ -57,8 +57,8 @@ class overlayMetadataToCSV:
 
 if __name__ == "__main__":
     wd = os.getcwd()
-    txtRawPath = os.path.join(wd, "data/projection_result_G1.txt")
-    outputCSVPath = os.path.join(wd, "data/projectionResultWithMetadata_G1.csv")
+    txtRawPath = os.path.join(wd, "data/projection_result_G1_VA.txt")
+    outputCSVPath = os.path.join(wd, "data/projectionResultWithMetadata_G1_VA.csv")
     columnNames = ["File Name", "Projection #1", "Projection #2", "Projection #3", "Manuscript Title", "Author", "Publication Year"]
     metadataJSON = os.path.join(wd, "./XMLProcessingAndTraining/ManuscriptMetadata/cleanedDocumentMetadata.json")
     overlay = overlayMetadataToCSV(txtRawPath, outputCSVPath, columnNames, metadataJSON)

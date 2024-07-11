@@ -1,4 +1,5 @@
 import pandas as pd, json
+import os
 class overlayMetadataToCSV:
     def __init__ (self, txtRawPath, outputCSVPath, columnNames, metadataJSON):
         self.txtRawPath = txtRawPath
@@ -52,9 +53,10 @@ class overlayMetadataToCSV:
             print(int)
 
 if __name__ == "__main__":
-    txtRawPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/CleanAndPrepareProjectionResults/projection_result.txt"
-    outputCSVPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/CleanAndPrepareProjectionResults/projectionResultWithMetadata.csv"
+    wd = os.getcwd()
+    txtRawPath = os.path.join(wd, "data/projection_result_G1.txt")
+    outputCSVPath = os.path.join(wd, "data/projectionResultWithMetadata_G1.csv")
     columnNames = ["File Name", "Projection #1", "Projection #2", "Projection #3", "Manuscript Title", "Author", "Publication Year"]
-    metadataJSON = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/XMLProcessingAndTraining/ManuscriptMetadata/cleanedDocumentMetadata.json"
+    metadataJSON = os.path.join(wd, "./XMLProcessingAndTraining/ManuscriptMetadata/cleanedDocumentMetadata.json")
     overlay = overlayMetadataToCSV(txtRawPath, outputCSVPath, columnNames, metadataJSON)
     overlay.toCSV()

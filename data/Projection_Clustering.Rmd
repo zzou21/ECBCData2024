@@ -48,7 +48,7 @@ head(df_va)
 
 ```{r}
 
-df = read.csv("projectionResultWithMetaData_G1.csv")
+df = read.csv("projectionResultWithMetaData_G1_VA.csv")
 
 head(df)
 
@@ -232,7 +232,7 @@ merged_df |>
        y = "") +
   theme(axis.title.y = element_blank(),  
         axis.text.y = element_blank(),   
-        axis.ticks.y = element_blank())
+        axis.ticks.y = element_blank()) 
 
 # Below is the third projection
 

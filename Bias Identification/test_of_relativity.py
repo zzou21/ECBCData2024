@@ -33,9 +33,10 @@ def main(sentences, model_name, keyword):
     # Read and tokenize the document
     embedding_1 = get_sentence_embedding(sentences[0], tokenizer, model)[keyword]
     embedding_2 = get_sentence_embedding(sentences[1], tokenizer, model)[keyword]
-    
-    good_embedding = get_sentence_embedding("This is a good man.", tokenizer, model)["good"]
-    bad_embedding = get_sentence_embedding("We share hatred towards bad people.", tokenizer, model)["bad"]
+
+
+    good_embedding = get_sentence_embedding("good virtues should be commended.", tokenizer, model)["good"]
+    bad_embedding = get_sentence_embedding("We dislike bad people.", tokenizer, model)["bad"]
     
     axis = good_embedding - bad_embedding
 
@@ -44,9 +45,9 @@ def main(sentences, model_name, keyword):
     print(project_onto_bias_axis(embedding_2, axis))
 
 # Now this is the main; feel free to change the following directory where fit
-keyword = "jerk"
+keyword = "fool"
 
-sentences = ["You are such a jerk", "You are such an interesting jerk"]
+sentences = ["You are such a fool.", "You are such an adorable fool."]
 
 model_name = 'emanjavacas/MacBERTh'
 # Call the main function with the document path and other arguments

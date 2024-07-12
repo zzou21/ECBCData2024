@@ -48,7 +48,7 @@ head(df_va)
 
 ```{r}
 
-df = read.csv("projectionResultWithMetaData_G1_VA.csv")
+df = read.csv("projectionResultWithMetaData_G1.csv")
 
 head(df)
 
@@ -213,7 +213,7 @@ merged_df |>
   geom_jitter(aes(y = 0), width = 0, height = 0.1, size = 0.5) + 
   theme_minimal() +
   labs(title = "One-Dimensional Scatterplot",
-       x = "P_christ",
+       x = "P_plantation",
        y = "") +
   theme(axis.title.y = element_blank(),  
         axis.text.y = element_blank(),   
@@ -228,7 +228,7 @@ merged_df |>
   geom_jitter(aes(y = 0), width = 0, height = 0.1, size = 0.5) + 
   theme_minimal() +
   labs(title = "One-Dimensional Scatterplot",
-       x = "P_edu",
+       x = "P_obedient",
        y = "") +
   theme(axis.title.y = element_blank(),  
         axis.text.y = element_blank(),   
@@ -242,7 +242,7 @@ merged_df |>
   geom_jitter(aes(y = 0), width = 0, height = 0.2, size = 0.5) + 
   theme_minimal() +
   labs(title = "One-Dimensional Scatterplot",
-       x = "P_clothes",
+       x = "P_duty",
        y = "") +
   theme(axis.title.y = element_blank(),  
         axis.text.y = element_blank(),   

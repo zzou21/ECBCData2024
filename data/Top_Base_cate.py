@@ -45,7 +45,7 @@ def find_top_similar_words(input_word, embeddings, top_n=50):
     return top_similar_words
 
 # Example usage
-input_word = "lazy"
+input_word = "dispossess"
 
 top_similar_words = find_top_similar_words(input_word, word_embeddings)
 print(f"Top 50 words similar to '{input_word}': {top_similar_words}")

@@ -1,6 +1,8 @@
-'''This Python class turns cosine similarity outputted JSON (outputted from FindCosineSimilarityWords/ClusterUsingCosineSimilarity.py) into readable methods through customizable manipulation settings. This program also grabs the file metadata for each outputted JSON.
+'''This Python class turns cosine similarity outputted JSON (outputted from FindCosineSimilarityWords/ClusterUsingCosineSimilarity.py) into readable methods through customizable manipulation settings. This program also grabs the file metadata for each outputted JSON. This class could be used as a method to manipulate the cosine similarity results to create different interpretations.
 
-Decoded self.outputJSONPath JSON file data type:
+This class contains different functions to decode: standardDecode, networkDecode, and different specialDecode functions. The specialDecode functions are meant for users to build their own program to decode the cosine similarity outputs.
+
+Decoded self.outputJSONPath JSON file data type from def standardDecode():
 
 {"fileName": {"Metadata": ["title String", "author String", year (as integer or list of integers], "baseword": ["returnedWord", score (float), "contextualSentence"], [["returnedWord(for duplicated words)", score (float), "contextualSentene"], ["returnedWord(for duplicated words)", score (float), "contextualSentence"]], ["returnedWord", score (float), "contextualSentence"]}, "fileName": ...}
 
@@ -71,6 +73,36 @@ class decodeCosSimOutput:
             if processedFilesCounter % self.batchWorkflowControl == 0:
                 self.workflowControl(decodedDictionary)
                 decodedDictionary.clear()
+    
+    # # This function looks at which returned word appeared most often in which categories and mauscripts. Code revised from the file: Presentation Materials/CosSimVisualization/cosSimvVisualization.py
+    def networkDecode(self):
+        appearanceDictionary = {}
+        with open(self.inputJSONPath, "r") as file:
+            content = json.load(file)
+        for filename, basewordDict in content.items():
+            for baseword, keywordList in basewordDict.items():
+                # print(type(keywordList))
+                for keywordSelf, keywordInfo in keywordList.items():
+                    cosSimScore = keywordInfo[0][0]
+                    contextSentence = keywordInfo[0][1]
+                    # print(keywordInfo[0][1])
+                    if keywordSelf not in appearanceDictionary:
+                        appearanceDictionary[keywordSelf] = {}
+                    if baseword not in appearanceDictionary[keywordSelf]:
+                        appearanceDictionary[keywordSelf][baseword] = [] #A list with the structure [filename, contextSentence, Title, Author, Year]
+
+                    appearanceDictionary[keywordSelf][baseword].append(filename)
+                    appearanceDictionary[keywordSelf][baseword].append(contextSentence)
+                    for int in self.accessMetadata(filename):
+                        appearanceDictionary[keywordSelf][baseword].append(int)
+                    print(f"Node processed word {keywordSelf}")
+
+        counter = 0
+        for returnedWord, appearance in appearanceDictionary.items():
+            if len(appearance) >= 5:
+                print(returnedWord, appearance)
+                counter += 1
+        print(counter)
 
     def specialDecodeA(self): # This special decode function is used to test decoding one document within the dictionary at a time. Customize code as needed.
         decodedDictionary = {}
@@ -101,12 +133,13 @@ class decodeCosSimOutput:
 
 if __name__ == "__main__":
     inputJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/temporaryOutputforRepatedWords.json"
-    # decode(codedJSONPath)
     auxiliaryJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/temporaryOutputforRepatedWords.json"
     metadataJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/XMLProcessingAndTraining/ManuscriptMetadata/cleanedDocumentMetadata.json"
     outputJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/decodeCosSimOutput/outputCosSimReadable.json"
     batchWorkflowControl = 2 #workflow control. Processing this number of outputs each time before clearning memory of decoded dictionary.
 
     decodeClassObject = decodeCosSimOutput(inputJSONPath, auxiliaryJSONPath, metadataJSONPath, outputJSONPath, batchWorkflowControl)
-    decodeClassObject.standardDecode()
+    # decodeClassObject.standardDecode()
+    decodeClassObject.networkDecode()
     # decodeClassObject.specialDecodeA()
+    # decodeClassObject.specialDecodeB()

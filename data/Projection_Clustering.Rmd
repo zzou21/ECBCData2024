@@ -48,7 +48,7 @@ head(df_va)
 
 ```{r}
 
-df = read.csv("projectionResultWithMetaData_G1_VA.csv")
+df = read.csv("projectionResultWithMetaData_G3_NT.csv")
 
 head(df)
 
@@ -63,8 +63,6 @@ df_va <- df |>
   ) |>
   filter(P1 * P2 * P3 != 0)
 
-df |>
-  filter(! str_detect(Year, ","))
 ```
 
 **Attempt 1: K-means Clustering**
@@ -108,9 +106,9 @@ par(mfrow = c(1, 1))
 
 # Apply K-means clustering
 k <- 4
-kmeans_P1 <- kmeans(matrix(df_k$P_christ, ncol = 1), centers = 3, nstart = 25)
+kmeans_P1 <- kmeans(matrix(df_k$P_christ, ncol = 1), centers = 5, nstart = 25)
 kmeans_P2 <- kmeans(matrix(df_k$P_edu, ncol = 1), centers = 4, nstart = 25)
-kmeans_P3 <- kmeans(matrix(df_k$P_clothes, ncol = 1), centers = 3, nstart = 25)
+kmeans_P3 <- kmeans(matrix(df_k$P_clothes, ncol = 1), centers = 4, nstart = 25)
 
 # Compute silhouette values
 sil <- silhouette(kmeans_P1$cluster, dist(df_va$P1))
@@ -216,7 +214,7 @@ merged_df |>
   geom_jitter(aes(y = 0), width = 0, height = 0.1, size = 0.5) + 
   theme_minimal() +
   labs(title = "One-Dimensional Scatterplot",
-       x = "P_plantation",
+       x = "P_civility",
        y = "") +
   theme(axis.title.y = element_blank(),  
         axis.text.y = element_blank(),   
@@ -231,7 +229,7 @@ merged_df |>
   geom_jitter(aes(y = 0), width = 0, height = 0.1, size = 0.5) + 
   theme_minimal() +
   labs(title = "One-Dimensional Scatterplot",
-       x = "P_obedient",
+       x = "P_salvation",
        y = "") +
   theme(axis.title.y = element_blank(),  
         axis.text.y = element_blank(),   
@@ -245,7 +243,7 @@ merged_df |>
   geom_jitter(aes(y = 0), width = 0, height = 0.2, size = 0.5) + 
   theme_minimal() +
   labs(title = "One-Dimensional Scatterplot",
-       x = "P_duty",
+       x = "P_deprive",
        y = "") +
   theme(axis.title.y = element_blank(),  
         axis.text.y = element_blank(),   
@@ -255,7 +253,7 @@ glimpse(merged_df)
 
 merged_df |>
   select(Author, Year, Filename, cluster_P1, cluster_P2, cluster_P3, P1, P2, P3) |>
-  filter(str_detect(Author, "Donne"))
+  filter(str_detect(Author, "Copland"))
   #filter(P1<0.2413)
 ```
 

@@ -58,10 +58,14 @@ def get_word_embedding(chunks, tokenizer, model, word):
         for token in re.split(r'\W+', chunk):
             if (token in substitute_word(word, document_dir=os.getcwd())) or (token == word):
                 in_set = True
-        ever_in = ever_in or in_set
+                if token == "natiues":
+                    ever_in = True
+                    input = inputs = tokenizer(chunk, return_tensors='pt', padding=True, truncation=True, max_length=512)
+                    for i, word in enumerate(tokenizer.convert_ids_to_tokens(inputs['input_ids'][0])):
+                        print(word)
         if not in_set:
             continue
-
+        print(ever_in)
         inputs = tokenizer(chunk, return_tensors='pt', padding=True, truncation=True, max_length=512)
         with torch.no_grad():
             outputs = model(**inputs)
@@ -75,7 +79,6 @@ def get_word_embedding(chunks, tokenizer, model, word):
                 word_embeddings[word] = embeddings[0, i, :].numpy()
             else:
                 word_embeddings[word] = (word_embeddings[word] * (word_times[word]-1) + embeddings[0, i, :].numpy()) / word_times[word]
-    
     return word_embeddings
 
 def get_sentence_embedding(sentence, tokenizer, model):
@@ -136,12 +139,16 @@ def project_onto_bias_axis(word, embeddings, a1, a2, a3, document_dir):
         if word in embeddings:
             embedding = embeddings[word]
             projection = np.dot(embedding, bias_axis.T) / np.linalg.norm(bias_axis)
+            print(word)
         else:
             for substitute in substitute_word(word, document_dir):
                 if substitute in embeddings:
                     embedding = embeddings[substitute]
                     projection = np.dot(embedding, bias_axis.T) / np.linalg.norm(bias_axis)
+                    print(substitute)
+                    print("natiues" in embeddings)
                     break
+                    
                 else:
                     projection = 0
         projections.append(projection)
@@ -169,10 +176,7 @@ def main(categories_json, document_path, model_name, keyword, document_directory
     # Example: Project words from the document onto bias axes
     projections = project_onto_bias_axis(keyword, embeddings, fa, ea, ca, document_directory)
     
-    result_file = os.path.join(document_directory, "./data/projection_result_G3_NT.txt")
-    result = f"{os.path.basename(document_path)}: {projections}\n"
-    with open(result_file, 'a') as f:
-        f.write(result)
+    print(f"{os.path.basename(document_path)}: {projections}\n")
 
 # Now this is the main; feel free to change the following directory where fit
 base_dir = os.getcwd()
@@ -182,7 +186,12 @@ categories_json = os.path.join(base_dir, './data/categorized_words_G3.json')
 # model_name = "finetuned_MacBERTh_Bible"
 model_name = model_name = os.path.join('emanjavacas/MacBERTh')
 
-document_path = os.path.join('restoredWaterhouse.txt')
+document_directory = os.path.join('/Users/lucasma/Downloads/AllVirginia')
 
+for file_name in os.listdir(document_directory):
+    document_path = os.path.join(document_directory, file_name)
 
-main(categories_json, document_path, model_name, keyword, base_dir)
+    # Ensure it's a file (not a subdirectory)
+    if os.path.isfile(document_path) and file_name== "A14803.txt":
+        # Call the main function with the document path and other arguments
+        main(categories_json, document_path, model_name, keyword, base_dir)

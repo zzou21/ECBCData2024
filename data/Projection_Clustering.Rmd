@@ -62,6 +62,9 @@ df_va <- df |>
     "Year" = `Publication.Year`
   ) |>
   filter(P1 * P2 * P3 != 0)
+
+df |>
+  filter(! str_detect(Year, ","))
 ```
 
 **Attempt 1: K-means Clustering**

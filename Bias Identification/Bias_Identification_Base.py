@@ -109,9 +109,9 @@ def compute_category_embeddings(categories, tokenizer, model):
 
 # Construct bias axes
 def construct_bias_axes(category_embeddings):
-    faith_bias_axis = category_embeddings["Plantation"] - category_embeddings["London"]
-    education_bias_axis = category_embeddings["Obedience"] - category_embeddings["Treachery"]
-    clothes_bias_axis = category_embeddings["Duty"] - category_embeddings["Lazy"]
+    faith_bias_axis = category_embeddings["Civility"] - category_embeddings["Barbarous"]
+    education_bias_axis = category_embeddings["Salvation"] - category_embeddings["Reprobate"]
+    clothes_bias_axis = category_embeddings["Deprive"] - category_embeddings["Voluntary"]
 
     return faith_bias_axis, education_bias_axis, clothes_bias_axis
 
@@ -124,7 +124,7 @@ def substitute_word(word, document_dir):
         for spell in equals:
             if spell==word:
                 ret.append(term)
-    ret = ["uirginia"]
+    ret = ["natiue", "natives", "natiues"]
     return ret
 
 # Function to project a word onto bias axes
@@ -141,6 +141,7 @@ def project_onto_bias_axis(word, embeddings, a1, a2, a3, document_dir):
                 if substitute in embeddings:
                     embedding = embeddings[substitute]
                     projection = np.dot(embedding, bias_axis.T) / np.linalg.norm(bias_axis)
+                    break
                 else:
                     projection = 0
         projections.append(projection)
@@ -168,7 +169,7 @@ def main(categories_json, document_path, model_name, keyword, document_directory
     # Example: Project words from the document onto bias axes
     projections = project_onto_bias_axis(keyword, embeddings, fa, ea, ca, document_directory)
     
-    result_file = os.path.join(document_directory, "./data/projection_result_G1_VA.txt")
+    result_file = os.path.join(document_directory, "./data/projection_result_G3_NT.txt")
     result = f"{os.path.basename(document_path)}: {projections}\n"
     with open(result_file, 'a') as f:
         f.write(result)
@@ -176,8 +177,8 @@ def main(categories_json, document_path, model_name, keyword, document_directory
 # Now this is the main; feel free to change the following directory where fit
 base_dir = os.getcwd()
 
-keyword = "virginia"
-categories_json = os.path.join(base_dir, './data/categorized_words.json')
+keyword = "native"
+categories_json = os.path.join(base_dir, './data/categorized_words_G3.json')
 # model_name = "finetuned_MacBERTh_Bible"
 model_name = model_name = os.path.join('emanjavacas/MacBERTh')
 

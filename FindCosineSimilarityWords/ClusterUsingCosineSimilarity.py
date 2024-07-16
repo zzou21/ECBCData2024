@@ -141,7 +141,7 @@ class findConeOfWordsCommonKeywordDefinition:
         # filePathList = [os.path.join(self.folderPath, fileName) for fileName in os.listdir(self.folderPath) if fileName.endswith(".txt") and not fileName.startswith("._")]
         for fileName in os.listdir(self.folderPath):
             if fileName.endswith(".txt") and not fileName.startswith("._"):
-                if fileName[:-4] in specificFileNameList.keys():
+                if fileName[:-4] in specificFileNameList.keys(): #This means the list of specific file names need to not have any document suffixes. E.g. the list needs to be "A00001" instead of "A00001.txt"
                     currentFilePath = os.path.join(self.folderPath, fileName)
                     keywordEmbeddingResults = self.processKeywords()
                     fileNameNoSuffix = fileName[:-4]
@@ -149,13 +149,15 @@ class findConeOfWordsCommonKeywordDefinition:
                     mainTextEmbeddingResults = self.processEmbeddingMainContent(currentFilePath)
                     for keyword, keywordCoordinates, keywordSentence in keywordEmbeddingResults:
                         similarities = []
+                        similaritiesSetCounter = set()
                         for mainTextWord, mainTextWordCoordiantes, mainTextSentence, mainTextSentenceIndex in mainTextEmbeddingResults:
                             similarity = cosine_similarity(keywordCoordinates.unsqueeze(0), mainTextWordCoordiantes.unsqueeze(0)).item()
                             similarityTuple = (mainTextWord, similarity, mainTextSentence, mainTextSentenceIndex)
                             # print(f"similarityTuple : {similarityTuple}.")
-                            if len(similarities) < self.returnTopWordsCount:
+                            if len(similaritiesSetCounter) < self.returnTopWordsCount:
                                 print(f"Processing word from text {fileNameNoSuffix}: {similarityTuple[0]}")
                                 heapq.heappush(similarities, (similarityTuple[1], similarityTuple))
+                                similaritiesSetCounter.add(mainTextWord)
                             else:
                                 heapq.heappushpop(similarities, (similarityTuple[1], similarityTuple))
 
@@ -164,10 +166,10 @@ class findConeOfWordsCommonKeywordDefinition:
                         for mainTextWord, similarityScore, mainTextSentence, mainTextSentenceIndex in similarities:
                             if keyword not in resultDictionary[fileNameNoSuffix]:
                                 resultDictionary[fileNameNoSuffix][keyword] = {}
-                            if mainTextWord not in resultDictionary[fileNameNoSuffix][keyword]: # make sure to remove christ and christs
+                            if mainTextWord not in resultDictionary[fileNameNoSuffix][keyword]:
                                 resultDictionary[fileNameNoSuffix][keyword][mainTextWord] = []
                             resultDictionary[fileNameNoSuffix][keyword][mainTextWord].append((similarityScore, mainTextSentence, mainTextSentenceIndex))
-                            if len(resultDictionary[fileNameNoSuffix][keyword]) > self.returnTopWordsCount: break
+                            if len(set(resultDictionary[fileNameNoSuffix][keyword])) > self.returnTopWordsCount: break
 
                     processedFilesCounter += 1
                     # print(f"Processed {len(resultDictionary)} files so far.")

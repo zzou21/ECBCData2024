@@ -16,6 +16,8 @@ class decodeCosSimOutput:
         self.metadataJSONPath = metadataJSONPath
         self.outputJSONPath = outputJSONPath
         self.batchWorkflowControl = batchWorkflowControl
+        self.fileProcessCounter = 0 # This is specificallt for the funciton workflowControl to track how many files has been processed.
+
     
     def accessMetadata(self, fileName): #This helper function finds the metadata of a manuscript. Has to be a string input, such as "A00001"
         with open(self.metadataJSONPath, "r") as metadataFile:
@@ -27,8 +29,7 @@ class decodeCosSimOutput:
         intendedMetadata = [intendedMetadataDict["TITLE"], intendedMetadataDict["AUTHOR"], intendedMetadataDict["DATE"]]
         return intendedMetadata
 
-    def workflowControl(self, resultDictionary): #workflow control.
-        fileProcessCounter = 0
+    def workflowControl(self, resultDictionary): #workflow control, only for operations that need to dump into a json.
         if resultDictionary:
             try:
                 with open(self.outputJSONPath, "r") as storageJSON:
@@ -40,8 +41,8 @@ class decodeCosSimOutput:
 
             with open(self.outputJSONPath, "w") as storageJSON:
                 json.dump(existingDictionary, storageJSON, indent=4)
-            fileProcessCounter += self.batchWorkflowControl
-            print(f"Progress saved to JSON file. {fileProcessCounter} file cosine similiarity outputs processed.")
+            self.fileProcessCounter += self.batchWorkflowControl
+            print(f"Progress saved to JSON file. {self.fileProcessCounter} file cosine similiarity outputs processed.")
 
     def standardDecode(self):
         decodedDictionary = {}
@@ -128,18 +129,21 @@ class decodeCosSimOutput:
                     for tuple in score:
                         print(tuple)
     
-    def specialDecodeB(self):
-        pass
+    def specialDecodeB(self): #This special decode is meant for debugging or ther purposes where the developer needs to print out lists of the results for purposes like graphing or extracting specific information. This function only takes in JSONs that have been processed using standardDecode above. This function does not store information anywhere. It only prints to counsol.
+        with open(self.inpoutJSOPath, "r") as file:
+            inputJSONContent = json.load(file)
+        # for 
+        
 
 if __name__ == "__main__":
-    inputJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/temporaryOutputforRepatedWords.json"
-    auxiliaryJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/temporaryOutputforRepatedWords.json"
+    inputJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/decodeCosSimOutput/output8SermonsReadable.json"
+    auxiliaryJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/temporaryOutputforRepatedWords.json" #This does not do anything unless specified by adding customized code.
     metadataJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/XMLProcessingAndTraining/ManuscriptMetadata/cleanedDocumentMetadata.json"
-    outputJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/decodeCosSimOutput/outputCosSimReadable.json"
+    outputJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/decodeCosSimOutput/output8SermonsReadable.json"
     batchWorkflowControl = 2 #workflow control. Processing this number of outputs each time before clearning memory of decoded dictionary.
 
     decodeClassObject = decodeCosSimOutput(inputJSONPath, auxiliaryJSONPath, metadataJSONPath, outputJSONPath, batchWorkflowControl)
-    # decodeClassObject.standardDecode()
-    decodeClassObject.networkDecode()
+    decodeClassObject.standardDecode()
+    # decodeClassObject.networkDecode()
     # decodeClassObject.specialDecodeA()
     # decodeClassObject.specialDecodeB()

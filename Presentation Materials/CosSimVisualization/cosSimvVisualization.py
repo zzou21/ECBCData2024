@@ -38,12 +38,12 @@ class visualizeCosSimOutputs:
         counter = 0
         print(appearanceDictionary)
         for returnedWord, appearance in appearanceDictionary.items():
-            if len(appearance) >= 5:
-
-                counter += 1
-        print(counter)
+            # if len(appearance) >= 5:
+            # print()
+            counter += 1
+        print(appearanceDictionary)
 
 if __name__ == "__main__":
-    jsonPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/temporaryOutputforRepatedWords.json"
+    jsonPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/eightSermonsOutputs.json"
     visCosSim = visualizeCosSimOutputs(jsonPath)
     visCosSim.networkRelations()

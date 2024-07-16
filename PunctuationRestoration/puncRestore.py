@@ -4,29 +4,40 @@ import os
 # Load the pre-trained model
 model = PunctuationModel()
 
-# Function to split text into chunks
-def split_text(text, chunk_size=128, overlap=32):
+# Function to split text into chunks and restore punctuation
+def process_text(text, chunk_size=128):
     words = text.split()
-    chunks = []
+    punctuated_text = ""
     start = 0
+
     while start < len(words):
         end = min(start + chunk_size, len(words))
         chunk = " ".join(words[start:end])
-        chunks.append(chunk)
-        start += chunk_size - overlap
-    return chunks
+        punctuated_chunk = model.restore_punctuation(chunk)
 
-# Function to restore punctuation
-def restore_punctuation(text):
-    chunks = split_text(text)
-    punctuated_chunks = [model.restore_punctuation(chunk) for chunk in chunks]
-    punctuated_text = " ".join(punctuated_chunks)
-    return punctuated_text
+        # Find the last sentence-ending punctuation
+        last_period = max(punctuated_chunk.rfind('.'), punctuated_chunk.rfind('!'), punctuated_chunk.rfind('?'))
+        
+        if last_period != -1:
+            # Adjust the chunk to end at the last period
+            punctuated_text += punctuated_chunk[:last_period+1] + " "
+            remaining_text = punctuated_chunk[last_period+1:].strip()
+        else:
+            punctuated_text += punctuated_chunk + " "
+            remaining_text = ""
+
+        # Adjust the original text to remove the processed part
+        start += chunk_size
+
+        if remaining_text:
+            remaining_words = remaining_text.split()
+            start -= len(remaining_words)
+
+    return punctuated_text.strip()
 
 # Example usage
 cwd = os.getcwd()
-
-document_directory = "/Users/lucasma/Downloads/80Files"
+document_directory = os.path.join(cwd, "dedication_text_EPcorpus_1590-1639")
 
 for file_name in os.listdir(document_directory):
     file_path = os.path.join(document_directory, file_name)
@@ -46,9 +57,9 @@ for file_name in os.listdir(document_directory):
         if text:
             print(f"Text length: {len(text)} characters")  # Debugging print
             text = text.lower()  # Optional: Lowercase text, consider if needed
-            punctuated_text = restore_punctuation(text)
+            punctuated_text = process_text(text)
 
-            with open(os.path.join(cwd, "2023_cleaned", file_name), "a") as f:
+            with open(os.path.join(cwd, "PunctuationRestoration", file_name), "a") as f:
                 f.write(punctuated_text)
 
         else:

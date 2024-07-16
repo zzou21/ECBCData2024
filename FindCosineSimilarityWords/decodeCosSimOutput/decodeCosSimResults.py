@@ -99,7 +99,7 @@ class decodeCosSimOutput:
 
         counter = 0
         for returnedWord, appearance in appearanceDictionary.items():
-            if len(appearance) >= 5:
+            if len(appearance) >= 5: # This searches for words that appeared in more than 5 categories.
                 print(returnedWord, appearance)
                 counter += 1
         print(counter)

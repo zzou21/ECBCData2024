@@ -2,9 +2,9 @@ import json
 
 metaJSON = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/XMLProcessingAndTraining/ManuscriptMetadata/cleanedDocumentMetadata.json"
 
-second = ""
+second = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/600Files.json"
 
-outputJson = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/updatedFilesToProcess.json"
+outputJson = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/filtered600Files.json"
 
 with open(metaJSON, "r") as file:
     content = json.load(file)

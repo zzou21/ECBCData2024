@@ -7,7 +7,7 @@ This dictionary is then stored in a JSON file.
 Author: Jerry Zou'''
 
 from transformers import AutoTokenizer, AutoModel
-import numpy as np, torch, nltk, json, heapq, os
+import numpy as np, torch, nltk, json, heapq, os, string
 # import torch.nn.functional as F
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -151,6 +151,9 @@ class findConeOfWordsCommonKeywordDefinition:
                         similarities = []
                         similaritiesSetCounter = set()
                         for mainTextWord, mainTextWordCoordiantes, mainTextSentence, mainTextSentenceIndex in mainTextEmbeddingResults:
+                            if mainTextWord in string.punctuation: #This filters out punctuations
+                                continue
+
                             similarity = cosine_similarity(keywordCoordinates.unsqueeze(0), mainTextWordCoordiantes.unsqueeze(0)).item()
                             similarityTuple = (mainTextWord, similarity, mainTextSentence, mainTextSentenceIndex)
                             # print(f"similarityTuple : {similarityTuple}.")
@@ -203,8 +206,8 @@ if __name__ == "__main__":
     filePath = "" #Ignore this variable for now#file path to the text to perform cosine similarity analysis.
     folderPath = "/hpc/group/datap2023ecbc/Team2024" #folder path to a folder that holds numerous TXT files to be scanned. Use either filePath or folderPath, not both.
     keywordJSONPath = "KeywordSentenceForBatch.json" #path to JSON file that stores the baseword and the contexual sentences.
-    storageJSONPath = "batch5Storage.json" #path to JSON file that stores the output.
-    specificFilesToAnalyze = "batch3.json"
+    storageJSONPath = "batch4Storage.json" #path to JSON file that stores the output.
+    specificFilesToAnalyze = "batch4.json"
     returnTopWordsCount = 40 # Number of output cosine similarity words you'd like to see.
     batchWorkflowControl = 2 # This is the workflow control methodology so that, when processing large amount of files, it won't be storing this number of files in the computer memory.
 

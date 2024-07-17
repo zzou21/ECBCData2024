@@ -48,8 +48,9 @@ class overlayMetadataToCSV:
         dataFrameInit = {}
         for list in contentListList:
             newList = flattenList(list)
-            listWithMetadata = newList + self.accessSpecificMetadata(list[0])
-            combinedList.append(listWithMetadata)
+            if not list[0].startswith(".DS_"): #This checks if there is any files in the txt that was processed as Desktop Services, a metadata file that exists in Mac machines. 
+                listWithMetadata = newList + self.accessSpecificMetadata(list[0])
+                combinedList.append(listWithMetadata)
         for index in range(len(self.columnNames)):
             dataFrameInit[self.columnNames[index]] = [names[index] for names in combinedList]
         newDataFrame = pd.DataFrame(dataFrameInit)
@@ -57,8 +58,8 @@ class overlayMetadataToCSV:
 
 if __name__ == "__main__":
     wd = os.getcwd()
-    txtRawPath = os.path.join(wd, "data/projection_result_G3_NT.txt")
-    outputCSVPath = os.path.join(wd, "data/projectionResultWithMetadata_G3_NT.csv")
+    txtRawPath = os.path.join(wd, "CleanAndPrepareProjectionResults/projection_result.txt")
+    outputCSVPath = os.path.join(wd, "CleanAndPrepareProjectionResults/projectionResultWithMetadata_G3_NT.csv")
     columnNames = ["File Name", "Projection #1", "Projection #2", "Projection #3", "Manuscript Title", "Author", "Publication Year"]
     metadataJSON = os.path.join(wd, "./XMLProcessingAndTraining/ManuscriptMetadata/cleanedDocumentMetadata.json")
     overlay = overlayMetadataToCSV(txtRawPath, outputCSVPath, columnNames, metadataJSON)

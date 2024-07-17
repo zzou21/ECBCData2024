@@ -141,7 +141,7 @@ class findConeOfWordsCommonKeywordDefinition:
         # filePathList = [os.path.join(self.folderPath, fileName) for fileName in os.listdir(self.folderPath) if fileName.endswith(".txt") and not fileName.startswith("._")]
         for fileName in os.listdir(self.folderPath):
             if fileName.endswith(".txt") and not fileName.startswith("._"):
-                if fileName[:-4] in specificFileNameList.keys(): #This means the list of specific file names need to not have any document suffixes. E.g. the list needs to be "A00001" instead of "A00001.txt"
+                if fileName[:-4] in specificFileNameList.keys():
                     currentFilePath = os.path.join(self.folderPath, fileName)
                     keywordEmbeddingResults = self.processKeywords()
                     fileNameNoSuffix = fileName[:-4]
@@ -198,17 +198,17 @@ class findConeOfWordsCommonKeywordDefinition:
                 json.dump(existingDictionary, storageJSON, indent=4)
             self.fileProcessCounter += self.batchWorkflowControl
             print(f"Progress saved to JSON file. {self.fileProcessCounter} files processed.")
-
+            
 if __name__ == "__main__":
     tokenizer = AutoTokenizer.from_pretrained("emanjavacas/MacBERTh")
     model = AutoModel.from_pretrained("emanjavacas/MacBERTh")
     
-    filePath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/data/copland_spellclean.txt" #file path to the text to perform cosine similarity analysis.
-    folderPath = "/Users/Jerry/Desktop/TXTFolder" #folder path to a folder that holds numerous TXT files to be scanned. Use either filePath or folderPath, not both.
-    keywordJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/OneLevelKeywordSentence.json" #path to JSON file that stores the baseword and the contexual sentences.
-    storageJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/temporaryOutputforRepatedWords.json" #path to JSON file that stores the output.
-    specificFilesToAnalyze = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/test.json"
-    returnTopWordsCount = 60 # Number of output cosine similarity words you'd like to see.
+    filePath = "" #Ignore this variable for now#file path to the text to perform cosine similarity analysis.
+    folderPath = "/hpc/group/datap2023ecbc/Team2024" #folder path to a folder that holds numerous TXT files to be scanned. Use either filePath or folderPath, not both.
+    keywordJSONPath = "KeywordSentenceForBatch.json" #path to JSON file that stores the baseword and the contexual sentences.
+    storageJSONPath = "batch1Storage.json" #path to JSON file that stores the output.
+    specificFilesToAnalyze = "batch1.json"
+    returnTopWordsCount = 40 # Number of output cosine similarity words you'd like to see.
     batchWorkflowControl = 2 # This is the workflow control methodology so that, when processing large amount of files, it won't be storing this number of files in the computer memory.
 
     findWordConeCommon = findConeOfWordsCommonKeywordDefinition(filePath, folderPath, keywordJSONPath, storageJSONPath, model, tokenizer, returnTopWordsCount, specificFilesToAnalyze, batchWorkflowControl) #initiates Python class object

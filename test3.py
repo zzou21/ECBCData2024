@@ -4,7 +4,7 @@ metaJSON = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/XMLProcess
 
 second = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/600Files.json"
 
-outputJson = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/filtered600Files.json"
+outputJson = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/400FilesNames.json"
 
 with open(metaJSON, "r") as file:
     content = json.load(file)

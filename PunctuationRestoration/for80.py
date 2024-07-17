@@ -36,16 +36,11 @@ def process_text(text, chunk_size=128):
     return punctuated_text.strip()
 
 # Example usage
-document_directory = "/Users/lucasma/Downloads/AllVA_cleaned copy"
+document_directory = "/Users/lucasma/Downloads/80Files"
 cwd = os.getcwd()
-with open(os.path.join(cwd, "300FilesNames.json"), "r") as f:
-    relevant = json.load(f)
 
 for file_name in os.listdir(document_directory):
-    if file_name in "/Users/lucasma/Downloads/AllVA_punc":
-        continue
-    if not file_name in relevant:
-        continue
+
     file_path = os.path.join(document_directory, file_name)
     
     if file_path[0] != ".":
@@ -65,7 +60,7 @@ for file_name in os.listdir(document_directory):
             text = text.lower()  # Optional: Lowercase text, consider if needed
             punctuated_text = process_text(text)
 
-            with open(os.path.join("/Users/lucasma/Downloads/AllVA_punc", file_name), "a") as f:
+            with open(os.path.join(cwd, "2023_cleaned", file_name), "a") as f:
                 f.write(punctuated_text)
 
         else:

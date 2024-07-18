@@ -48,8 +48,8 @@ class decodeCosSimOutput:
         decodedDictionary = {}
         processedFilesCounter = 0
         with open(self.inputJSONPath, "r") as file:
-            content = json.load(file)
-        for fileName, basewordDict in content.items():
+            inputContentDictionary = json.load(file)
+        for fileName, basewordDict in inputContentDictionary.items():
             decodedDictionary[fileName] = {}
             decodedDictionary[fileName]["Metadata"] = self.accessMetadata(fileName) # This uploads the metadata of the file into the dictionary
 
@@ -70,12 +70,12 @@ class decodeCosSimOutput:
                         print(tuple)
 
             processedFilesCounter += 1
-            print(f"Processed {fileName}'s cosine similiarity output. {processedFilesCounter} out of {len(content)+1} file outputs processed.")
-            if processedFilesCounter % self.batchWorkflowControl == 0:
-                self.workflowControl(decodedDictionary)
-                decodedDictionary.clear()
+            print(f"Processed {fileName}'s cosine similiarity output. {processedFilesCounter} out of {len(inputContentDictionary)} file outputs processed.")
+            # if processedFilesCounter % self.batchWorkflowControl == 0:
+            #     self.workflowControl(decodedDictionary)
+            #     decodedDictionary.clear()
     
-    # # This function looks at which returned word appeared most often in which categories and mauscripts. Code revised from the file: Presentation Materials/CosSimVisualization/cosSimvVisualization.py
+    # # This function looks at which returned word appeared most often in which categories and mauscripts. Basically, this function reverses th the structure of the dictionary where we have the returned word as the key. This function uses the JSON storage that has NOT been cleaned using the standard decode function above. Code revised from the file: Presentation Materials/CosSimVisualization/cosSimvVisualization.py
     def networkDecode(self):
         appearanceDictionary = {}
         with open(self.inputJSONPath, "r") as file:
@@ -93,16 +93,22 @@ class decodeCosSimOutput:
                         appearanceDictionary[keywordSelf][baseword] = [] #A list with the structure [filename, contextSentence, Title, Author, Year]
 
                     appearanceDictionary[keywordSelf][baseword].append(filename)
-                    appearanceDictionary[keywordSelf][baseword].append(contextSentence)
-                    for int in self.accessMetadata(filename):
-                        appearanceDictionary[keywordSelf][baseword].append(int)
-                    print(f"Node processed word {keywordSelf}")
+                    '''Comment or uncomment the following three lines with respect to whether the user needs to access the context sentence: '''
+                    # appearanceDictionary[keywordSelf][baseword].append(contextSentence)
+                    '''Comment or uncomment the following three lines with respect to whether the user needs to access metadata: '''
+                    # for int in self.accessMetadata(filename):
+                    #     appearanceDictionary[keywordSelf][baseword].append(int)
+                    # print(f"Node processed word {keywordSelf}")
 
         counter = 0
         for returnedWord, appearance in appearanceDictionary.items():
-            if len(appearance) >= 5: # This searches for words that appeared in more than 5 categories.
-                print(returnedWord, appearance)
+            if len(appearance) >= 8: # This searches for words that appeared in more than 5 categories.
+                # print(returnedWord, appearance)
                 counter += 1
+                print(returnedWord)
+                # for category, file in appearance.items():
+                    # print(returnedWord, category, file[0])
+                # print(returnedWord, appearance)
         print(counter)
 
     def specialDecodeA(self): # This special decode function is used to test decoding one document within the dictionary at a time. Customize code as needed.
@@ -136,14 +142,14 @@ class decodeCosSimOutput:
         
 
 if __name__ == "__main__":
-    inputJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/decodeCosSimOutput/output8SermonsReadable.json"
+    inputJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/eightSermonsOutputs.json"
     auxiliaryJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/temporaryOutputforRepatedWords.json" #This does not do anything unless specified by adding customized code.
     metadataJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/XMLProcessingAndTraining/ManuscriptMetadata/cleanedDocumentMetadata.json"
     outputJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/decodeCosSimOutput/output8SermonsReadable.json"
     batchWorkflowControl = 2 #workflow control. Processing this number of outputs each time before clearning memory of decoded dictionary.
 
     decodeClassObject = decodeCosSimOutput(inputJSONPath, auxiliaryJSONPath, metadataJSONPath, outputJSONPath, batchWorkflowControl)
-    decodeClassObject.standardDecode()
-    # decodeClassObject.networkDecode()
+    # decodeClassObject.standardDecode()
+    decodeClassObject.networkDecode()
     # decodeClassObject.specialDecodeA()
     # decodeClassObject.specialDecodeB()

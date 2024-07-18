@@ -165,13 +165,13 @@ stop_words = set(stopwords.words('english'))
 base_dir = os.path.dirname(os.path.abspath(__file__))
 # Path to the .txt file
 # file_path = os.path.join(base_dir, "../VirginiaTotal.txt")
-file_path = "/Users/Jerry/Desktop/VirginiaTotal.txt"
+file_path = os.path.join(base_dir, "../data/VirginiaTotal.txt")
 # file_path = "data/A10010_cleaned.txt"
 
 sentences = read_sentence_document(file_path)
 
 # Target word to find similarities with
-target_words = ["Virginia", "London"]
+target_words = ["native"]
 
 # Find and print top 10 similar words
 top_similar_words, embeddingCoordinates = find_top_similar_words(target_words, sentences, tokenizer, model, 50)

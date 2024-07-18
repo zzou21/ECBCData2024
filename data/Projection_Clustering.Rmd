@@ -11,11 +11,12 @@ library(cluster)
 library(tidyverse)
 library(factoextra)
 library(mclust)
+library(stringr)
 ```
 
 First, perform initial data cleaning. The below df_va dataframe is one that has removed all unnecessary original formatting as well as texts in which the term "Virginia" does not directly or indirectly appear.
 
-```{r, eval=FALSE}
+```{r Obsolete-reading, eval=FALSE}
 # This chunk of code is obsolete as it attempts to clean the .txt file. Now as we have the cleaned .csv file, thanks to Jerry, this chunk is no longer useful.
 
 # Load the text file as a data frame
@@ -46,9 +47,9 @@ df_va <- df_cleaned |>
 head(df_va)
 ```
 
-```{r}
+```{r read-csv}
 
-df = read.csv("../Projection/data/projectionResultWithMetaData_G3_NT.csv")
+df = read.csv("../Projection/data/projectionResultWithMetaData_G2_NT.csv")
 
 head(df)
 
@@ -67,7 +68,7 @@ df_va <- df |>
 
 **Attempt 1: K-means Clustering**
 
-```{r}
+```{r k-calc}
 
 set.seed(27708) # For reproducibility
 
@@ -131,7 +132,7 @@ fviz_silhouette(sil)
 
 **Attempt 3: Gaussian Mixture Models (GMM)**
 
-```{r, eval=FALSE}
+```{r GMM-calc, eval=FALSE}
 
 df_gmm <- df_va
 
@@ -154,7 +155,7 @@ df_gmm <- perform_gmm_clustering(df_gmm, "P3")
 
 ```
 
-```{r, eval=FALSE}
+```{r GMM-visual, eval=FALSE}
 
 # Function to visualize clustering results
 visualize_gmm_clustering <- function(data, variable) {
@@ -188,7 +189,7 @@ df_gmm
 
 The following chunk is shared by all types of clustering for generating visualization.
 
-```{r}
+```{r k-visual}
 
 clustered <- df_clustered_k
 
@@ -202,7 +203,8 @@ merged_df <- merged_df |>
     cluster_P1 = as.character(cluster_P1),
     cluster_P2 = as.character(cluster_P2),
     cluster_P3 = as.character(cluster_P3)
-  ) 
+  ) |>
+  select(Filename, P1, P2, P3, Title, Author, Year, cluster_P1, cluster_P2, cluster_P3)
 
 head(merged_df)
 
@@ -226,18 +228,21 @@ custom_labels <- c("Very barbarous", "Relatively Neutral", "More civil")
 custom_colors <- c("1" = "#66c2a5", "2" = "#fc8d62", "3" = "#8da0cb")
 merged_df$cluster_P1 <- factor(merged_df$cluster_P1, levels = c("2", "3", "1"))
 lines_df <- merged_df |> filter(Filename %in% c("A73849", "A19313", "A14803"))
+
+head(lines_df)
+
 caption_labels <- c("A73849" = "Donne", "A19313" = "Copland", "A14803" = "Waterhouse")
 
 merged_df |>
   ggplot(aes(x = P1, color = cluster_P1)) +
-  geom_density(aes(fill = cluster_P1), alpha = 0.2) +  
-  geom_jitter(aes(y = 0), width = 0.1, height = 0.1, size = 0.5, alpha = 0.7) +
+  geom_density(aes(fill = cluster_P1), alpha = 0.1) +  
+  geom_jitter(aes(y = 0), width = 0.1, height = 0.1, size = 1.5, alpha = 0.8) +
   geom_vline(xintercept = 0, linetype = "dashed", color = "red3") +
   geom_vline(data = lines_df, aes(xintercept = P1), color = "blue", linetype = "dotted", size = 0.5) +
   annotate("text", x = lines_df$P1[lines_df$Filename == "A73849"], y = 1.5, label = "Donne", vjust = 1, color = "blue3") +
   annotate("text", x = lines_df$P1[lines_df$Filename == "A19313"], y = 1.25, label = "Copland", vjust = 1, color = "blue3") +
   annotate("text", x = lines_df$P1[lines_df$Filename == "A14803"], y = 1, label = "Waterhouse", vjust = 1, color = "blue3") +
-  annotate("text", x = 0.8, y = Inf, label = "Absolute Neutrality", vjust = 2, color = "red3") +
+  annotate("text", x = 0.6, y = Inf, label = "Absolute Neutrality", vjust = 2, color = "red3") +
   scale_color_manual(values = custom_colors, labels = custom_labels) +  
   scale_fill_manual(values = custom_colors, labels = custom_labels) +  
   theme_minimal(base_size = 15) +  
@@ -301,13 +306,94 @@ glimpse(merged_df)
 
 merged_df |>
   select(Author, Year, Filename, cluster_P1, cluster_P2, cluster_P3, P1, P2, P3) |>
-  filter(str_detect(Author, "Copland"))
+  filter(str_detect(Author, "Waterhouse"))
   #filter(P1<0.2413)
+```
+
+The next chunk is a time-series analysis that attempts to track the use of words and its changes over time.
+
+```{r time-series}
+
+head(merged_df)
+
+process_year <- function(year) {
+  # Remove square brackets
+  year <- str_replace_all(year, "\\[|\\]", "")
+  
+  # Split by comma if there are multiple years
+  years <- str_split(year, ",\\s*")[[1]]
+  # Convert to numeric and take the minimum if there are multiple years
+  if (length(years) > 1) {
+    year <- min(as.numeric(years))
+  }
+  return(as.character(year))
+}
+
+
+cy_df <- merged_df |>
+  mutate(Year = as.numeric(sapply(Year, process_year))) |>
+  filter(Year < 1626 & Year >= 1606) |>
+  mutate(Year_Interval = cut(Year, breaks = seq(1606, 1627, by = 5), right = FALSE, labels = seq(1606, 1622, by = 5)))
+
+percentage_p1 <- cy_df |>
+  group_by(Year_Interval) %>%
+  mutate(total_works = n()) %>%
+  group_by(Year_Interval, cluster_P1) %>%
+  summarise(count = n(), total_works = first(total_works)) %>%
+  mutate(percentage = (count / total_works) * 100) %>%
+  ungroup()
+
+ggplot(percentage_p1, aes(x = Year_Interval, y = percentage, fill = as.factor(cluster_P1))) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Percentage of Works in Each Cluster Over 5-Year Intervals",
+       x = "Year Interval",
+       y = "Percentage",
+       fill = "Cluster") +
+  scale_fill_manual(values = c("1" = "blue", "2" = "green", "3" = "red"),
+                    labels = c("1" = "Cluster 1", "2" = "Cluster 2", "3" = "Cluster 3")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+ggplot(percentage_p1, aes(x = Year_Interval, y = percentage, color = as.factor(cluster_P1), group = cluster_P1)) +
+  geom_line(size = 1) +
+  geom_point() +
+  labs(title = "Percentage of Works in Each Cluster Over Time (5-Year Intervals)",
+       x = "Year Interval",
+       y = "Percentage",
+       color = "Cluster") +
+  scale_fill_manual(values = c("1" = "blue", "2" = "green", "3" = "red"),
+                    labels = c("1" = "Cluster 1", "2" = "Cluster 2", "3" = "Cluster 3")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+ggplot(percentage_p1, aes(x = as.numeric(as.character(Year_Interval)), y = percentage, fill = as.factor(cluster_P1), group = cluster_P1)) +
+  geom_density(stat = "identity", alpha = 0.6) +
+  labs(title = "Density of Works in Each Cluster Over Time",
+       x = "Year Interval",
+       y = "Percentage",
+       fill = "Cluster") +
+  scale_fill_manual(values = c("1" = "blue", "2" = "green", "3" = "red"),
+                    labels = c("1" = "Cluster 1", "2" = "Cluster 2", "3" = "Cluster 3")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+ggplot(percentage_p1, aes(x = Year_Interval, y = percentage, fill = as.factor(cluster_P1))) +
+  geom_bar(stat = "identity") +
+  labs(title = "Percentage of Works in Each Cluster Over 5-Year Intervals",
+       x = "Year Interval",
+       y = "Percentage",
+       fill = "Cluster") +
+  scale_fill_manual(values = c("1" = "blue", "2" = "green", "3" = "red"),
+                    labels = c("1" = "Cluster 1", "2" = "Cluster 2", "3" = "Cluster 3")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
 **Attempt 2: Hierarchical Clustering**
 
-```{r}
+```{r Hierarchical}
 # Load necessary libraries
 library(ggplot2)
 

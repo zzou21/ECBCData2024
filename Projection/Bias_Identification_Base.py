@@ -101,10 +101,10 @@ def compute_category_embeddings(categories, tokenizer, model):
                 if word in sentence_embedding:
                     term_embedding = sentence_embedding[word]
                     category_embeddings.append(term_embedding)
-            if category_embeddings:
-                categories_embeddings[category] = np.mean(category_embeddings, axis=0)
-            else:
-                categories_embeddings[category] = np.zeros(model.config.hidden_size)
+        if category_embeddings:
+            categories_embeddings[category] = np.mean(category_embeddings, axis=0)
+        else:
+            categories_embeddings[category] = np.zeros(model.config.hidden_size)
     return categories_embeddings
 
 # Construct bias axes
@@ -127,7 +127,7 @@ def substitute_word(word):
             if spell==word:
                 ret.append(term)"""
     
-    ret = ["uirginia"]
+    ret = ["heathens"]
     return ret
 
 # Function to project a word onto bias axes
@@ -173,7 +173,7 @@ def main(categories_json, document_path, model_name, keyword, base_dir):
     # Example: Project words from the document onto bias axes
     projections = project_onto_bias_axis(keyword, embeddings, a1, a2, a3)
     
-    result_file = os.path.join(base_dir, "Projection/data/projection_result_G1_VA.txt")
+    result_file = os.path.join(base_dir, "Projection/data/projection_result_G2_HT.txt")
     result = f"{os.path.basename(document_path)}: {projections}\n"
     with open(result_file, 'a') as f:
         f.write(result)
@@ -181,8 +181,8 @@ def main(categories_json, document_path, model_name, keyword, base_dir):
 # Now this is the main; feel free to change the following directory where fit
 base_dir = os.getcwd()
 
-keyword = "virginia"
-categories_json = os.path.join(base_dir, 'Projection/data/categorized_words_G1.json')
+keyword = "heathen"
+categories_json = os.path.join(base_dir, 'Projection/data/categorized_words_G2.json')
 
 # model_name = "finetuned_MacBERTh_Bible"
 model_name = os.path.join('emanjavacas/MacBERTh')
@@ -192,6 +192,6 @@ document_directory = os.path.join('/Users/lucasma/Downloads/AllVA_punc')
 for file_name in os.listdir(document_directory):
     document_path = os.path.join(document_directory, file_name)
 
-    if os.path.isfile(document_path) and file_name[0] != ".":
+    if os.path.isfile(document_path) and file_name[0] != "." and file_name == "A14803.txt":
         # Call the main function with the document path and other arguments
         main(categories_json, document_path, model_name, keyword, base_dir)

@@ -1,5 +1,5 @@
 ---
-title: "Clustering of Projection Results" 
+title: "Line Graph for Clustering Results" 
 author: "Lucas Ma"
 ---
 
@@ -16,7 +16,7 @@ library(stringr)
 
 ```{r read-csv}
 
-df = read.csv("../Projection/data/projectionResultWithMetaData_G1_VA.csv")
+df = read.csv("../Projection/data/projectionResultWithMetaData_G3_NT.csv")
 
 head(df)
 
@@ -183,110 +183,23 @@ Below is an improved visualization of the clustering of projection.
 
 annotations <- lines_df |>
   mutate(label = case_when(
-    Filename == "A73849" ~ "J. Donne",
-    Filename == "A19313" ~ "P. Copland",
-    Filename == "A14803" ~ "E. Waterhouse"
+    Filename == "A73849" ~ "Donne",
+    Filename == "A19313" ~ "Copland",
+    Filename == "A14803" ~ "Waterhouse"
   ),
   x_pos = case_when(
-    Filename == "A73849" ~ P1 - 0.02,
-    Filename == "A19313" ~ P1 + 0.08,
-    Filename == "A14803" ~ P1 + 0.08
+    Filename == "A73849" ~ P1 - 0.12,
+    Filename == "A19313" ~ P1 + 0.15,
+    Filename == "A14803" ~ P1 + 0.2
   ),
   y_pos = case_when(
     Filename == "A73849" ~ 1.3,
-    Filename == "A19313" ~ 0.7,
+    Filename == "A19313" ~ 0.9,
     Filename == "A14803" ~ 1
   ))
 
-merged_df$cluster_P1 <- factor(merged_df$cluster_P1, levels = c(1, 2, 3))
+merged_df$cluster_P1 <- factor(merged_df$cluster_P1, levels = c(2, 3, 1))
 
-# Define custom labels and colors for the clusters
-custom_labels <- c("1" = "More Religious-driven", "2" = "Relatively Neutral", "3" = "Very Financial-driven")
-custom_colors <- c("1" = "#66c2a5", "2" = "#fc8d62", "3" = "#8da0cb")
-
-annotated_points <- merged_df %>% filter(Filename %in% c("A73849", "A19313", "A14803"))
-remaining_points <- merged_df %>% filter(!Filename %in% c("A73849", "A19313", "A14803"))
-
-glimpse(lines_df)
-
-merged_df |>
-  filter(str_detect(Filename, "A14803"))
-
-merged_df |>
-  ggplot(aes(x = P1, color = factor(cluster_P1))) +
-  geom_density(aes(fill = factor(cluster_P1)), alpha = 0.05) +  
-  geom_jitter(
-    data = remaining_points, 
-    aes(x = P1, y = 0, color = factor(cluster_P1), alpha = 0.15), 
-    width = 0, 
-    height = 0.1, 
-    size = 1.5
-  ) +
-  geom_jitter(
-    data = annotated_points, 
-    aes(x = P1, y = 0, color = factor(cluster_P1), alpha = 1), 
-    width = 0, 
-    height = 0.1, 
-    size = 1.5
-  )+
-  geom_vline(
-    xintercept = 0, 
-    linetype = "dashed", 
-    color = "red3", 
-    show.legend = FALSE,
-    size = 0.7
-  ) +
-  geom_vline(
-    data = lines_df, 
-    aes(xintercept = P1, color = factor(cluster_P1)), 
-    linetype = "dotted", 
-    size = 0.6, 
-    show.legend = FALSE
-  ) +
-  geom_text(
-    data = annotations, 
-    aes(x = x_pos, y = y_pos, label = label, color = factor(cluster_P1)), 
-    vjust = 1, 
-    show.legend = FALSE,
-    family = "Times New Roman",
-    fontface = "bold",
-    angle = -90
-  ) +  
-  annotate(
-    "text", x = -0.25, y = Inf, 
-    label = "Absolute\n Neutrality", 
-    vjust = 1, color = "red3",
-    family = "Times New Roman",
-    fontface = "bold"
-  ) +
-  scale_color_manual(values = custom_colors, labels = custom_labels, name = "Clusters") +  
-  scale_fill_manual(values = custom_colors, labels = custom_labels, name = "Clusters") +  
-  scale_alpha_identity() +  
-  scale_x_continuous(limits = c(-0.3, 3.2)) +
-  theme_minimal(base_size = 12) +  
-  labs(
-    title = 'Distribution of Connotations of "Virginia" \n on Money-Christ Dichotomy',
-    x = 'Note: the more rightward, the more monetary is the connotation of "Virginia"',
-    y = ""
-    ) +
-  theme(
-    axis.title.y = element_blank(),
-    axis.text.y = element_blank(),
-    axis.ticks.y = element_blank(),
-    axis.text.x = element_blank(),
-    legend.position = "top",  
-    legend.title = element_blank(), 
-    legend.text = element_text(
-      size = 10, family = "Times New Roman"
-      ),
-    panel.grid.major = element_blank(),  
-    panel.grid.minor = element_blank(),  
-    plot.title = element_text(
-      size = 18, hjust = 0.5, margin = margin(b = 20), family = "Times New Roman",
-      face = "bold"
-      ),
-    text = element_text(family = "Times New Roman")
-  )
 ```
 
 The next chunk is a time-series analysis that attempts to track the use of words and its changes over time.
@@ -308,7 +221,7 @@ process_year <- function(year) {
   return(as.character(year))
 }
 
-custom_labels_line <- c("1" = "More Religious-driven", "2" = "Monetary-inclined", "3" = "Very Financial-driven")
+custom_labels_line <- c("1" = "Civil", "2" = "Barbarous", "3" = "Neutral / Barbarous-inclined")
 custom_colors_line <- c("1" = "#66c2a5", "2" = "#fc8d62", "3" = "#8da0cb")
 
 
@@ -316,6 +229,10 @@ cy_df <- merged_df |>
   mutate(Year = as.numeric(sapply(Year, process_year))) |>
   filter(Year < 1626 & Year >= 1606) |>
   mutate(Year_Interval = cut(Year, breaks = seq(1606, 1627, by = 5), right = FALSE, labels = seq(1606, 1622, by = 5)))
+
+head(cy_df)
+head(merged_df)
+
 
 percentage_p1 <- cy_df |>
   group_by(Year_Interval) |>
@@ -340,21 +257,21 @@ ggplot(percentage_interval, aes(x = Year_Interval, y = percentage, color = as.fa
     aes(
       label = sprintf("%.1f%%", percentage)
       ),
-    vjust = -0.75, hjust = 0.5,
+    vjust = -1, hjust = 0.5,
     size = 3,
     family = "Times New Roman",
     show.legend = FALSE,
     fontface = "bold"
     ) +
-  scale_color_manual(values = custom_colors_line, labels = custom_labels_line, name = "Legend: ") +  
-  labs(title = 'Attitudes about "Virginia" Changes over Time \n (5Y Average)',
+  scale_color_manual(values = custom_colors_line, labels = custom_labels_line, name = "") +  
+  labs(title = 'Attitudes about "Native" Changes over Time (5Y Average)',
        x = "Year Interval",
        y = "Percentage") +
   scale_y_continuous(expand = expansion(mult = c(0, 0.1)), limits = c(0, NA)) +  
   theme_minimal(base_size = 15) +
   theme(
     plot.title = element_text(
-      size = 20, family = "Times New Roman", face = "bold", 
+      size = 18, family = "Times New Roman", face = "bold", 
       margin = margin(b = 20),
       hjust = 0.5
       ),
@@ -409,4 +326,69 @@ ggplot(percentage_p1, aes(x = Year_Interval, y = percentage, fill = as.factor(cl
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
+head(cy_df)
+head(merged_df)
+
+
+cy_df |>
+  ggplot(aes(x = P1, color = cluster_P1)) +  
+  geom_density() +
+  geom_jitter(aes(y = 0), width = 0, height = 0.1, size = 0.5) + 
+  theme_minimal() +
+  labs(title = "One-Dimensional Scatterplot",
+       x = "P_civility",
+       y = "") +
+  theme(axis.title.y = element_blank(),  
+        axis.text.y = element_blank(),   
+        axis.ticks.y = element_blank())
+
+
+cy_df |>
+  filter(Year > 1622) |>
+  select(P1, Year) |>
+  summarize(mean(P1))
+```
+
+```{r bar-plot-read}
+wf <- read_csv("wordfreq.csv")
+```
+
+```{r bar-plot}
+
+head(wf)
+
+wf<- wf |>
+  filter(count>5 | word=="rude" | word == "state") |>
+  filter(word != "word" & word != "riches" & word != "sending")
+
+custom_theme <- theme_minimal(base_size = 10, base_family = "Times New Roman") +
+  theme(
+    axis.text.x = element_text(angle = 60, hjust = 1, size = 12, color = "black", family = "Times New Roman"),
+    axis.text.y = element_text(size = 10, color = "black", family = "Times New Roman"),
+    axis.title.y = element_text(size = 12, margin = margin(r = 10), family = "Times New Roman"),
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5, margin = margin(b = 15), family = "Times New Roman"),
+    panel.grid.major = element_line(color = "grey80", size = 0.1),
+    panel.grid.minor = element_blank()
+  )
+
+# Define colors
+top_color <- "#fc8d62"  # Color for the top 4 words
+other_color <- "#66c2a5"  # Color for the rest
+
+# Assuming 'wf' is your dataframe and 'count' is the frequency column
+wf <- wf %>%
+  arrange(desc(count)) %>%
+  mutate(fill_color = ifelse(row_number() <= 4, top_color, other_color))
+
+# Create the plot
+wf %>%
+  ggplot(aes(x = reorder(word, count), y = count, fill = fill_color)) +
+  geom_bar(stat = "identity", color = "black", size = 0.2, width = 0.7) +
+  scale_fill_identity() +
+  labs(title = "Word Frequency in Ascending Order",
+       x = "",
+       y = "Counts") +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
+  scale_x_discrete(expand = expansion(add = c(0, 0))) +
+  custom_theme
 ```

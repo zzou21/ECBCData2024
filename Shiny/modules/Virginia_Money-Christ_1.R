@@ -1,23 +1,67 @@
-# plot_module.R
+# Virginia_Money-Christ_1.R
 
 library(shiny)
 library(ggiraph)
 library(dplyr)
 library(tidyverse)
+library(cluster)
+library(factoextra)
+library(mclust)
+library(stringr)
 
 plot_ui <- function(id) {
   ns <- NS(id)
-  ggiraphOutput(ns("interactive_plot"))
+  girafeOutput(ns("interactive_plot"))
 }
 
 plot_server <- function(id, data) {
   moduleServer(id, function(input, output, session) {
-    output$interactive_plot <- renderggiraph({
+    output$interactive_plot <- renderGirafe({
       # Ensure data is reactive
-      df_va <- data()
+      df <- data()
       
-      annotations <- df_va |>
-        filter(Filename %in% c("A73849", "A19313", "A14803")) |>
+      # K-means Clustering
+      set.seed(27708) # For reproducibility
+      
+      # Standardization
+      df_k <- df %>%
+        mutate(
+          P1_scaled = scale(P1),
+          P2_scaled = scale(P2),
+          P3_scaled = scale(P3)
+        ) %>%
+        select(Filename, P1_scaled, P2_scaled, P3_scaled)
+      
+      # If anyone were to change the number of clusters for the three clusterings, please change it here:
+      k_1 <- 3
+      k_2 <- 3
+      k_3 <- 4
+      
+      kmeans_P1 <- kmeans(matrix(df_k$P1_scaled, ncol = 1), centers = k_1, nstart = 25)
+      kmeans_P2 <- kmeans(matrix(df_k$P2_scaled, ncol = 1), centers = k_2, nstart = 25)
+      kmeans_P3 <- kmeans(matrix(df_k$P3_scaled, ncol = 1), centers = k_3, nstart = 25)
+      
+      # Add the cluster assignments to the original data frame
+      df_clustered_k <- df_k %>% 
+        mutate(cluster_P1 = kmeans_P1$cluster,
+               cluster_P2 = kmeans_P2$cluster,
+               cluster_P3 = kmeans_P3$cluster)
+      
+      clustered <- df_clustered_k
+      
+      merged_df <- df %>%
+        left_join(clustered, by = "Filename") %>%
+        mutate(
+          cluster_P1 = as.character(cluster_P1),
+          cluster_P2 = as.character(cluster_P2),
+          cluster_P3 = as.character(cluster_P3)
+        ) %>%
+        select(Filename, P1, P2, P3, Title, Author, Year, cluster_P1, cluster_P2, cluster_P3)
+      
+      # Filter the dataset for the specified filenames
+      lines_df <- merged_df %>% filter(Filename %in% c("A73849", "A19313", "A14803"))
+      
+      annotations <- lines_df %>%
         mutate(label = case_when(
           Filename == "A73849" ~ "J. Donne",
           Filename == "A19313" ~ "P. Copland",
@@ -34,20 +78,20 @@ plot_server <- function(id, data) {
           Filename == "A14803" ~ 1
         ))
       
-      df_va$cluster_P1 <- factor(df_va$cluster_P1, levels = c(1, 2, 3))
+      merged_df$cluster_P1 <- factor(merged_df$cluster_P1, levels = c(3, 2, 1))
       
       # Define custom labels and colors for the clusters
-      custom_labels <- c("1" = "More Religious-driven", "2" = "Relatively Neutral", "3" = "Very Financial-driven")
+      custom_labels <- c("3" = "More Religious-driven", "2" = "Relatively Neutral", "1" = "Very Financial-driven")
       custom_colors <- c("1" = "#66c2a5", "2" = "#fc8d62", "3" = "#8da0cb")
       
-      annotated_points <- df_va %>% filter(Filename %in% c("A73849", "A19313", "A14803"))
-      remaining_points <- df_va %>% filter(!Filename %in% c("A73849", "A19313", "A14803"))
+      annotated_points <- merged_df %>% filter(Filename %in% c("A73849", "A19313", "A14803"))
+      remaining_points <- merged_df %>% filter(!Filename %in% c("A73849", "A19313", "A14803"))
       
       plot <- ggplot() +
-        geom_density(data = df_va, aes(x = P1, color = factor(cluster_P1), fill = factor(cluster_P1)), alpha = 0.05) +  
+        geom_density(data = merged_df, aes(x = P1, color = factor(cluster_P1), fill = factor(cluster_P1)), alpha = 0.05) +  
         geom_jitter_interactive(
           data = remaining_points, 
-          aes(x = P1, y = 0, color = factor(cluster_P1), alpha = 0.15, tooltip = paste("Author:", Author, "<br>File Name:", Filename, "<br>Publication:", Year)), 
+          aes(x = P1, y = 0, color = factor(cluster_P1), alpha = 0.15, tooltip = paste("Author:", Author, "<br>Filename:", Filename, "<br>Publication:", Year)), 
           width = 0, 
           height = 0.1, 
           size = 1.5
@@ -67,7 +111,7 @@ plot_server <- function(id, data) {
           size = 0.7
         ) +
         geom_vline(
-          data = annotations, 
+          data = lines_df, 
           aes(xintercept = P1, color = factor(cluster_P1)), 
           linetype = "dotted", 
           size = 0.6, 
@@ -118,7 +162,7 @@ plot_server <- function(id, data) {
           text = element_text(family = "Times New Roman")
         )
       
-      ggiraph(code = {print(plot)}, width_svg = 7, height_svg = 5)
+      girafe(ggobj = plot, width_svg = 7, height_svg = 5)
     })
   })
 }

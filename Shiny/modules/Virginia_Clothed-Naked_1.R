@@ -1,60 +1,104 @@
-# plot_module.R
+# Virginia_Money-Christ_1.R
 
 library(shiny)
 library(ggiraph)
 library(dplyr)
 library(tidyverse)
+library(cluster)
+library(factoextra)
+library(mclust)
+library(stringr)
 
 plot_ui <- function(id) {
   ns <- NS(id)
-  ggiraphOutput(ns("interactive_plot"))
+  girafeOutput(ns("interactive_plot"))
 }
 
 plot_server <- function(id, data) {
   moduleServer(id, function(input, output, session) {
-    output$interactive_plot <- renderggiraph({
+    output$interactive_plot <- renderGirafe({
       # Ensure data is reactive
-      df_va <- data()
+      df <- data()
       
-      annotations <- df_va |>
-        filter(Filename %in% c("A73849", "A19313", "A14803")) |>
+      # K-means Clustering
+      set.seed(27708) # For reproducibility
+      
+      # Standardization
+      df_k <- df %>%
+        mutate(
+          P2_scaled = scale(P2),
+          P2_scaled = scale(P2),
+          P3_scaled = scale(P3)
+        ) %>%
+        select(Filename, P2_scaled, P2_scaled, P3_scaled)
+      
+      # If anyone were to change the number of clusters for the three clusterings, please change it here:
+      k_1 <- 3
+      k_2 <- 3
+      k_3 <- 4
+      
+      kmeans_P2 <- kmeans(matrix(df_k$P2_scaled, ncol = 1), centers = k_1, nstart = 25)
+      kmeans_P2 <- kmeans(matrix(df_k$P2_scaled, ncol = 1), centers = k_2, nstart = 25)
+      kmeans_P3 <- kmeans(matrix(df_k$P3_scaled, ncol = 1), centers = k_3, nstart = 25)
+      
+      # Add the cluster assignments to the original data frame
+      df_clustered_k <- df_k %>% 
+        mutate(cluster_P2 = kmeans_P2$cluster,
+               cluster_P2 = kmeans_P2$cluster,
+               cluster_P3 = kmeans_P3$cluster)
+      
+      clustered <- df_clustered_k
+      
+      merged_df <- df %>%
+        left_join(clustered, by = "Filename") %>%
+        mutate(
+          cluster_P2 = as.character(cluster_P2),
+          cluster_P2 = as.character(cluster_P2),
+          cluster_P3 = as.character(cluster_P3)
+        ) %>%
+        select(Filename, P2, P2, P3, Title, Author, Year, cluster_P2, cluster_P2, cluster_P3)
+      
+      # Filter the dataset for the specified filenames
+      lines_df <- merged_df %>% filter(Filename %in% c("A73849", "A19313", "A14803"))
+      
+      annotations <- lines_df %>%
         mutate(label = case_when(
           Filename == "A73849" ~ "J. Donne",
           Filename == "A19313" ~ "P. Copland",
           Filename == "A14803" ~ "E. Waterhouse"
         ),
         x_pos = case_when(
-          Filename == "A73849" ~ P1 - 0.02,
-          Filename == "A19313" ~ P1 + 0.08,
-          Filename == "A14803" ~ P1 + 0.08
+          Filename == "A73849" ~ P2 - 0.02,
+          Filename == "A19313" ~ P2 + 0.08,
+          Filename == "A14803" ~ P2 + 0.08
         ),
         y_pos = case_when(
-          Filename == "A73849" ~ 1.3,
-          Filename == "A19313" ~ 0.7,
-          Filename == "A14803" ~ 1
+          Filename == "A73849" ~ 1,
+          Filename == "A19313" ~ 2.3,
+          Filename == "A14803" ~ 2
         ))
       
-      df_va$cluster_P1 <- factor(df_va$cluster_P1, levels = c(1, 2, 3))
+      merged_df$cluster_P2 <- factor(merged_df$cluster_P2, levels = c(3, 1, 2))
       
       # Define custom labels and colors for the clusters
-      custom_labels <- c("1" = "More Religious-driven", "2" = "Relatively Neutral", "3" = "Very Financial-driven")
+      custom_labels <- c("3" = "Very Naked", "1" = "Relatively Neutral", "2" = "More Clothed")
       custom_colors <- c("1" = "#66c2a5", "2" = "#fc8d62", "3" = "#8da0cb")
       
-      annotated_points <- df_va %>% filter(Filename %in% c("A73849", "A19313", "A14803"))
-      remaining_points <- df_va %>% filter(!Filename %in% c("A73849", "A19313", "A14803"))
+      annotated_points <- merged_df %>% filter(Filename %in% c("A73849", "A19313", "A14803"))
+      remaining_points <- merged_df %>% filter(!Filename %in% c("A73849", "A19313", "A14803"))
       
       plot <- ggplot() +
-        geom_density(data = df_va, aes(x = P1, color = factor(cluster_P1), fill = factor(cluster_P1)), alpha = 0.05) +  
+        geom_density(data = merged_df, aes(x = P2, color = factor(cluster_P2), fill = factor(cluster_P2)), alpha = 0.05) +  
         geom_jitter_interactive(
           data = remaining_points, 
-          aes(x = P1, y = 0, color = factor(cluster_P1), alpha = 0.15, tooltip = paste("Author:", Author, "<br>File Name:", Filename, "<br>Publication:", Year)), 
+          aes(x = P2, y = 0, color = factor(cluster_P2), alpha = 0.15, tooltip = paste("Author:", Author, "<br>Filename:", Filename, "<br>Publication:", Year)), 
           width = 0, 
           height = 0.1, 
           size = 1.5
         ) +
         geom_jitter_interactive(
           data = annotated_points, 
-          aes(x = P1, y = 0, color = factor(cluster_P1), alpha = 1, tooltip = paste("Author:", Author, "<br>Filename:", Filename, "<br>Publication:", Year)), 
+          aes(x = P2, y = 0, color = factor(cluster_P2), alpha = 1, tooltip = paste("Author:", Author, "<br>Filename:", Filename, "<br>Publication:", Year)), 
           width = 0, 
           height = 0.1, 
           size = 1.5
@@ -67,15 +111,15 @@ plot_server <- function(id, data) {
           size = 0.7
         ) +
         geom_vline(
-          data = annotations, 
-          aes(xintercept = P1, color = factor(cluster_P1)), 
+          data = lines_df, 
+          aes(xintercept = P2, color = factor(cluster_P2)), 
           linetype = "dotted", 
           size = 0.6, 
           show.legend = FALSE
         ) +
         geom_text_interactive(
           data = annotations, 
-          aes(x = x_pos, y = y_pos, label = label, color = factor(cluster_P1), tooltip = label), 
+          aes(x = x_pos, y = y_pos, label = label, color = factor(cluster_P2), tooltip = label), 
           vjust = 1, 
           show.legend = FALSE,
           family = "Times New Roman",
@@ -83,7 +127,7 @@ plot_server <- function(id, data) {
           angle = -90
         ) +  
         annotate(
-          "text", x = -0.25, y = Inf, 
+          "text", x = -0.2, y = 3, 
           label = "Absolute\n Neutrality", 
           vjust = 1, color = "red3",
           family = "Times New Roman",
@@ -92,11 +136,10 @@ plot_server <- function(id, data) {
         scale_color_manual(values = custom_colors, labels = custom_labels, name = "Clusters") +  
         scale_fill_manual(values = custom_colors, labels = custom_labels, name = "Clusters") +  
         scale_alpha_identity() +  
-        scale_x_continuous(limits = c(-0.3, 3.2)) +
         theme_minimal(base_size = 12) +  
         labs(
-          title = 'Distribution of Connotations of "Virginia" \n on Money-Christ Dichotomy',
-          x = 'Note: the more rightward, the more monetary is the connotation of "Virginia"',
+          title = 'Distribution of Connotations of "Virginia" \n on Clothes-Naked Dichotomy',
+          x = 'Note: the more rightward, the more clothed is the connotation of "Virginia"',
           y = ""
         ) +
         theme(
@@ -118,7 +161,7 @@ plot_server <- function(id, data) {
           text = element_text(family = "Times New Roman")
         )
       
-      ggiraph(code = {print(plot)}, width_svg = 7, height_svg = 5)
+      girafe(ggobj = plot, width_svg = 7, height_svg = 5)
     })
   })
 }

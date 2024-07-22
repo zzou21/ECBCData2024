@@ -1,5 +1,3 @@
-# Virginia_Money-Christ_1.R
-
 library(shiny)
 library(ggiraph)
 library(dplyr)
@@ -122,15 +120,15 @@ plot_server <- function(id, data) {
           aes(x = x_pos, y = y_pos, label = label, color = factor(cluster_P1), tooltip = label), 
           vjust = 1, 
           show.legend = FALSE,
-          family = "Times New Roman",
+          family = "Roboto",
           fontface = "bold",
-          angle = -90
+          angle = 0
         ) +  
         annotate(
           "text", x = -0.25, y = Inf, 
           label = "Absolute\n Neutrality", 
           vjust = 1, color = "red3",
-          family = "Times New Roman",
+          family = "Roboto",
           fontface = "bold"
         ) +
         scale_color_manual(values = custom_colors, labels = custom_labels, name = "Clusters") +  
@@ -151,15 +149,16 @@ plot_server <- function(id, data) {
           legend.position = "top",  
           legend.title = element_blank(), 
           legend.text = element_text(
-            size = 10, family = "Times New Roman"
+            size = 10, family = "Roboto"
           ),
           panel.grid.major = element_blank(),  
           panel.grid.minor = element_blank(),  
           plot.title = element_text(
-            size = 18, hjust = 0.5, margin = margin(b = 20), family = "Times New Roman",
+            size = 18, hjust = 0.5, margin = margin(b = 20), family = "Roboto",
             face = "bold"
           ),
-          text = element_text(family = "Times New Roman")
+          plot.margin = unit(c(1, 1, 1, 1), "cm"),
+          text = element_text(family = "Roboto")
         )
       
       girafe(ggobj = plot, width_svg = 7, height_svg = 5)

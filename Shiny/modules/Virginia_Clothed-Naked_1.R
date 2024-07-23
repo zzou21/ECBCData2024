@@ -16,6 +16,11 @@ plot_ui <- function(id) {
 
 plot_server <- function(id, data) {
   moduleServer(id, function(input, output, session) {
+    
+    # Define custom labels and colors for the clusters
+    custom_labels <- c("3" = "Very Naked", "1" = "Relatively Neutral", "2" = "More Clothed")
+    custom_colors <- c("1" = "#66c2a5", "2" = "#fc8d62", "3" = "#8da0cb")
+    
     output$interactive_plot <- renderGirafe({
       # Ensure data is reactive
       df <- data()
@@ -80,9 +85,6 @@ plot_server <- function(id, data) {
       
       merged_df$cluster_P2 <- factor(merged_df$cluster_P2, levels = c(3, 1, 2))
       
-      # Define custom labels and colors for the clusters
-      custom_labels <- c("3" = "Very Naked", "1" = "Relatively Neutral", "2" = "More Clothed")
-      custom_colors <- c("1" = "#66c2a5", "2" = "#fc8d62", "3" = "#8da0cb")
       
       annotated_points <- merged_df %>% filter(Filename %in% c("A73849", "A19313", "A14803"))
       remaining_points <- merged_df %>% filter(!Filename %in% c("A73849", "A19313", "A14803"))
@@ -122,7 +124,7 @@ plot_server <- function(id, data) {
           aes(x = x_pos, y = y_pos, label = label, color = factor(cluster_P2), tooltip = label), 
           vjust = 1, 
           show.legend = FALSE,
-          family = "Roboto",
+          family = "Open Sans",
           fontface = "bold",
           angle = -90
         ) +  
@@ -130,7 +132,7 @@ plot_server <- function(id, data) {
           "text", x = -0.2, y = 3, 
           label = "Absolute\n Neutrality", 
           vjust = 1, color = "red3",
-          family = "Roboto",
+          family = "Open Sans",
           fontface = "bold"
         ) +
         scale_color_manual(values = custom_colors, labels = custom_labels, name = "Clusters") +  
@@ -150,18 +152,137 @@ plot_server <- function(id, data) {
           legend.position = "top",  
           legend.title = element_blank(), 
           legend.text = element_text(
-            size = 10, family = "Roboto"
+            size = 10, family = "Open Sans"
           ),
           panel.grid.major = element_blank(),  
           panel.grid.minor = element_blank(),  
           plot.title = element_text(
-            size = 18, hjust = 0.5, margin = margin(b = 20), family = "Roboto",
+            size = 18, hjust = 0.5, margin = margin(b = 20), family = "Open Sans",
             face = "bold"
           ),
-          text = element_text(family = "Roboto")
+          text = element_text(family = "Open Sans"),
+          plot.margin = unit(c(1, 1, 1, 1), "cm")
         )
       
       girafe(ggobj = plot, width_svg = 7, height_svg = 5)
+    })
+    
+    output$line_plot <- renderGirafe({
+      df <- data()
+      
+      process_year <- function(year) {
+        # Remove square brackets
+        year <- str_replace_all(year, "\\[|\\]", "")
+        
+        # Split by comma if there are multiple years
+        years <- str_split(year, ",\\s*")[[1]]
+        # Convert to numeric and take the minimum if there are multiple years
+        if (length(years) > 1) {
+          year <- min(as.numeric(years))
+        }
+        return(as.character(year))
+      }
+      
+      # K-means Clustering
+      set.seed(27708) # For reproducibility
+      
+      # Standardization
+      df_k <- df %>%
+        mutate(
+          P3_scaled = scale(P3),
+          P2_scaled = scale(P2),
+          P3_scaled = scale(P3)
+        ) %>%
+        select(Filename, P3_scaled, P2_scaled, P3_scaled)
+      
+      # If anyone were to change the number of clusters for the three clusterings, please change it here:
+      k_1 <- 3
+      k_2 <- 3
+      k_3 <- 3
+      
+      kmeans_P3 <- kmeans(matrix(df_k$P3_scaled, ncol = 1), centers = k_1, nstart = 25)
+      kmeans_P2 <- kmeans(matrix(df_k$P2_scaled, ncol = 1), centers = k_2, nstart = 25)
+      kmeans_P3 <- kmeans(matrix(df_k$P3_scaled, ncol = 1), centers = k_3, nstart = 25)
+      
+      # Add the cluster assignments to the original data frame
+      df_clustered_k <- df_k %>% 
+        mutate(cluster_P3 = kmeans_P3$cluster,
+               cluster_P2 = kmeans_P2$cluster,
+               cluster_P3 = kmeans_P3$cluster)
+      
+      clustered <- df_clustered_k
+      
+      merged_df <- df %>%
+        left_join(clustered, by = "Filename") %>%
+        mutate(
+          cluster_P3 = as.character(cluster_P3),
+          cluster_P2 = as.character(cluster_P2),
+          cluster_P3 = as.character(cluster_P3)
+        ) %>%
+        select(Filename, P3, P2, P3, Title, Author, Year, cluster_P3, cluster_P2, cluster_P3)
+      
+      
+      cy_df <- merged_df %>%
+        mutate(Year = as.numeric(sapply(Year, process_year))) %>%
+        filter(Year < 1626 & Year >= 1606) %>%
+        mutate(Year_Interval = cut(Year, breaks = seq(1606, 1627, by = 5), right = FALSE, labels = seq(1606, 1622, by = 5)))
+      
+      percentage_P3 <- cy_df %>%
+        group_by(Year_Interval) %>%
+        mutate(total_works = n()) %>%
+        group_by(Year_Interval, cluster_P3) %>%
+        summarise(count = n(), total_works = first(total_works)) %>%
+        mutate(percentage = (count / total_works) * 100) %>%
+        ungroup()
+      
+      percentage_interval <- percentage_P3 %>%
+        mutate(new_x = case_when(
+          Year_Interval == "1606" ~ "1606 - 1610",
+          Year_Interval == "1611" ~ "1611 - 1615",
+          Year_Interval == "1616" ~ "1616 - 1620",
+          Year_Interval == "1621" ~ "1621 - 1625"
+        ))
+      
+      percentage_interval <- percentage_interval %>%
+        mutate(tooltip_text = paste("Number of works:", count, "\nTime Frame:", new_x))
+      
+      line_plot <- ggplot(percentage_interval, aes(x = Year_Interval, y = percentage, color = as.factor(cluster_P3), group = cluster_P3)) +
+        geom_line(size = 0.8) +
+        geom_point_interactive(aes(tooltip = tooltip_text), size = 1.5) +
+        geom_text(
+          aes(
+            label = sprintf("%.1f%%", percentage)
+          ),
+          vjust = -1, hjust = 0.5,
+          size = 3,
+          family = "Open Sans",
+          show.legend = FALSE,
+          fontface = "bold"
+        ) +
+        scale_color_manual(values = custom_colors, labels = custom_labels, name = "") +  
+        labs(title = 'Attitudes about "Virginia" Change over Time\n(5Y Average)',
+             x = "Year Interval",
+             y = "Percentage") +
+        scale_y_continuous(expand = expansion(mult = c(0, 0.1)), limits = c(0, NA)) +  
+        theme_minimal(base_size = 12) +
+        theme(
+          plot.title = element_text(
+            size = 18, family = "Open Sans", face = "bold", 
+            margin = margin(b = 20),
+            hjust = 0.5
+          ),
+          axis.title = element_text(size = 12, family = "Open Sans"),
+          axis.text = element_text(size = 12, family = "Open Sans"),
+          axis.text.x = element_text(angle = 0, hjust = 0.5),
+          legend.title = element_text(size = 10, family = "Open Sans"),
+          legend.text = element_text(size = 10, family = "Open Sans"),
+          legend.position = "top",
+          panel.grid.major = element_line(color = "grey80", size = 0.25),
+          panel.grid.minor = element_blank(),
+          plot.margin = unit(c(1, 1, 1, 1), "cm")
+        )
+      
+      girafe(ggobj = line_plot, width_svg = 7, height_svg = 5)
     })
   })
 }

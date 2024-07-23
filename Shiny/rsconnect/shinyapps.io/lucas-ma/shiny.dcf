@@ -5,6 +5,6 @@ account: lucas-ma
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 12349537
-bundleId: 8893500
+bundleId: 8895714
 url: https://lucas-ma.shinyapps.io/shiny/
 version: 1

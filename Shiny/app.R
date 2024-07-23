@@ -2,84 +2,94 @@ library(shiny)
 library(ggiraph)
 library(dplyr)
 library(shinythemes)
+library(gdtools)
+
+# Register Open Sans font from Google Fonts
+gdtools::register_gfont(
+  family = "Open Sans"
+  # url = "https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap"
+)
 
 ui <- fluidPage(
   theme = shinytheme("flatly"),
+  title = "ECBC2024 Visual",
   tags$head(
-    tags$link(rel = "stylesheet", href = "https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap"),
-    tags$script(HTML("
-    document.fonts.ready.then(function() {
-      Shiny.setInputValue('fontsLoaded', true);
-    });
-  ")),
+    tags$link(rel = "stylesheet", href = "https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap"),
     tags$style(HTML("
-    body {
-      font-family: 'Roboto', sans-serif;
-      color: black;
-    }
-    h2 {
-      font-family: 'Roboto', sans-serif;
-    }
-    .title-panel {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    .sidebar {
-      background-color: #012169;
-      padding: 20px;
-      border-radius: 5px;
-      color: white;
-    }
-    .main-panel {
-      background-color: #ffffff;
-      padding: 20px;
-      border-radius: 5px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      color: black;
-    }
-    .form-group, .btn {
-      color: black;
-    }
-    .btn-primary {
-      background-color: #FCF7E5;
-      color: black;
-    }
-    .narrative-panel {
-      background-color: #FCF7E5;
-      padding: 20px;
-      border-radius: 5px;
-      color: black;
-      margin-top: 30px;
-    }
-  "))
+      body {
+        font-family: 'Open Sans', sans-serif;
+        color: black;
+      }
+      h2 {
+        font-family: 'Open Sans', sans-serif;
+      }
+      .title-panel {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      .selection-panel {
+        background-color: #012169;
+        padding: 20px;
+        border-radius: 5px;
+        color: white;
+        margin-bottom: 30px;
+        align-items: center;
+        justify-content: center;
+      }
+      .main-panel {
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        color: black;
+        margin-bottom: 30px;
+      }
+      .form-group, .btn {
+        color: white;
+      }
+      .btn-primary {
+        background-color: #FCF7E5;
+        color: black;
+        margin-bottom: 10px;
+      }
+      .narrative-panel {
+        background-color: #FCF7E5;
+        padding: 20px;
+        border-radius: 5px;
+        color: black;
+        margin-top: 30px;
+      }
+    "))
   ),
-  titlePanel(div(class = "title-panel", h2("Interactive Clustering Plot"))),
-  sidebarLayout(
-    sidebarPanel(
-      class = "sidebar",
-      selectInput("keyword", "Choose a Keyword:",
-                  choices = c("Virginia", "Native")),
-      uiOutput("axis_ui"),
-      actionButton("view_graph", "View Graph", class = "btn btn-primary")
-    ),
-    mainPanel(
-      class = "main-panel",
-      uiOutput("plot_ui")
-    )
+  titlePanel(div(class = "title-panel", h2("Interactive Clustering and Time-series Plot"))),
+  div(style = "justify-content: center;",
+      div(class = "selection-panel",
+          fluidRow(
+            column(3, selectInput("keyword", "Choose a Keyword:", choices = c("Virginia", "Native"))),
+            column(3, uiOutput("axis_ui")),
+            column(6, div(style = "display: flex; align-items: center;", 
+                          actionButton("view_graph", "View Graph", class = "btn btn-primary", style = "margin-top: 15px;")))
+          )
+      )
+  ),
+  fluidRow(
+    column(6, uiOutput("plot_ui1")),
+    column(6, uiOutput("plot_ui2"))
   ),
   fluidRow(
     column(12,
            div(class = "narrative-panel",
                h3("Note:"),
-               p("For the keyword 'Virginia' and the axis 'Clothed-Naked', the narrative might discuss their symbolic meanings in Virginia."),
-               p("For the keyword 'Native' and the axis 'Duty-Lazy', the narrative might explore perceptions of duty and laziness among Native populations."),
-               p("These clustering are designed to provide an understanding of the relative attitude of authors with respect to each other.")
+               p("Select a keyword to investigate, and a bias axis to project the keyword onto. Click View Graph for visualizations."),
+               p("The clustering graphs are designed to provide an understanding of the relative attitude of authors with respect to each other."),
+               p("The time-series graphs show the evolution of connotations of the selected keywords over time. Percentage compositions are calculated within 5-year frames starting with the labeled year.")
            )
     )
   )
 )
 
-# Define Server
+
+
 server <- function(input, output, session) {
   
   # List of modules based on the provided image
@@ -109,10 +119,19 @@ server <- function(input, output, session) {
   })
   
   # Generate plot UI based on selected module
-  output$plot_ui <- renderUI({
+  output$plot_ui1 <- renderUI({
     req(input$keyword, input$axis)
     ns <- NS("interactive_plot")
-    girafeOutput(ns("interactive_plot"))
+    tagList(
+      girafeOutput(ns("interactive_plot"))
+    )
+  })
+  output$plot_ui2 <- renderUI({
+    req(input$keyword, input$axis)
+    ns <- NS("interactive_plot")
+    tagList(
+      girafeOutput(ns("line_plot"))
+    )
   })
   
   # Load and call the appropriate module and dataset when the button is clicked
@@ -158,12 +177,12 @@ server <- function(input, output, session) {
     
     cleaned_data <- data |>
       rename(
-        "Filename" = `File.Name`,
-        "P1" = `Projection..1`,
-        "P2" = `Projection..2`,
-        "P3" = `Projection..3`,
-        "Title" = `Manuscript.Title`,
-        "Year" = `Publication.Year`
+        "Filename" = File.Name,
+        "P1" = Projection..1,
+        "P2" = Projection..2,
+        "P3" = Projection..3,
+        "Title" = Manuscript.Title,
+        "Year" = Publication.Year
       ) |>
       filter(P1 * P2 * P3 != 0)
     

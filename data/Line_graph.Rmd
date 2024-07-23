@@ -230,10 +230,6 @@ cy_df <- merged_df |>
   filter(Year < 1626 & Year >= 1606) |>
   mutate(Year_Interval = cut(Year, breaks = seq(1606, 1627, by = 5), right = FALSE, labels = seq(1606, 1622, by = 5)))
 
-head(cy_df)
-head(merged_df)
-
-
 percentage_p1 <- cy_df |>
   group_by(Year_Interval) |>
   mutate(total_works = n()) |>
@@ -264,7 +260,7 @@ ggplot(percentage_interval, aes(x = Year_Interval, y = percentage, color = as.fa
     fontface = "bold"
     ) +
   scale_color_manual(values = custom_colors_line, labels = custom_labels_line, name = "") +  
-  labs(title = 'Attitudes about "Native" Changes over Time (5Y Average)',
+  labs(title = 'Attitudes about "Native" Change over Time (5Y Average)',
        x = "Year Interval",
        y = "Percentage") +
   scale_y_continuous(expand = expansion(mult = c(0, 0.1)), limits = c(0, NA)) +  

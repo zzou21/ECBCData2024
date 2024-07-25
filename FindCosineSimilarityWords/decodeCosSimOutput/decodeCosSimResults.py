@@ -101,15 +101,47 @@ class decodeCosSimOutput:
                     # print(f"Node processed word {keywordSelf}")
 
         counter = 0
+        mostAppearingWord = []
         for returnedWord, appearance in appearanceDictionary.items():
-            if len(appearance) >= 8: # This searches for words that appeared in more than 5 categories.
-                # print(returnedWord, appearance)
-                counter += 1
-                print(returnedWord)
+            # print(returnedWord, appearance)
+            if len(appearance) >= 10 and len(set(manuscriptList[0] for category, manuscriptList in appearance.items())) : # This searches for words that appeared in more than X categories. The second conditional checks the number of manuscripts that the words appeared in.
+                print(returnedWord, len(appearance))
+                mostAppearingWord.append((returnedWord, len(appearance)))
+                counter +=1
                 # for category, file in appearance.items():
-                    # print(returnedWord, category, file[0])
+                #     if len(file) > 1:
+                #         for fileNum in file:
+
+                            # # metadataList = self.accessMetadata(fileNum)
+
+                            # counter += 1
+
+                            # if metadataList[1] and metadataList[2]:
+                            #     textInfo = fileNum + ";" + metadataList[0][0][:-10] + ";" + metadataList[1][0] + ";" + str(metadataList[2][0])
+                            #     print(returnedWord, "|", category, "|", textInfo)
+                            #     counter +=1 
+                            # else:
+                            #     print(returnedWord, "|", category, "|", fileNum)
+                                # counter +=1 
+
+                    # else:
+
+                    #     # metadataList = self.accessMetadata(file[0])
+                    #     counter +=1
+
+                        # if metadataList[1] and metadataList[2]:
+                        #     textInfo = file + ";" + metadataList[0][0][:-10] + ";" + metadataList[1][0] + ";" + str(metadataList[2][0])
+                        #     print(returnedWord, "|", category, "|", textInfo)
+                        #     counter +=1 
+                        # else:
+                        #     print(returnedWord, "|", category, "|", file, "Anonymous")
+                        #     counter += 1
+
+                # print(returnedWord, len(appearance))
                 # print(returnedWord, appearance)
         print(counter)
+        mostAppearingWord = sorted(mostAppearingWord, key = lambda x: x[1], reverse=True)
+        print(f"Most appearing word: {mostAppearingWord}")
 
     def specialDecodeA(self): # This special decode function is used to test decoding one document within the dictionary at a time. Customize code as needed.
         decodedDictionary = {}
@@ -142,7 +174,7 @@ class decodeCosSimOutput:
         
 
 if __name__ == "__main__":
-    inputJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/eightSermonsOutputs.json"
+    inputJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/combined300FilesOutput.json"
     auxiliaryJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/temporaryOutputforRepatedWords.json" #This does not do anything unless specified by adding customized code.
     metadataJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/XMLProcessingAndTraining/ManuscriptMetadata/cleanedDocumentMetadata.json"
     outputJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/decodeCosSimOutput/output8SermonsReadable.json"

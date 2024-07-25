@@ -1,5 +1,14 @@
-import pandas as pd, json
-import os
+'''This file takes in the bias axes projection output TXT file and turns it into a CSV file. Note that for this program to work, the inputted TXT must be in the format:
+"...
+A08764.txt: [1.5560772, -0.13457894, -0.4109472]
+A01581.txt: [0, 0, 0]
+A68251.txt: [0, 0, 0]
+A22364.txt: [0.2996455, -0.06307747, -0.5617731]
+A04389.txt: [0, 0, 0]
+..."
+
+Author: Jerry Zou'''
+import pandas as pd, json, os
 class overlayMetadataToCSV:
     def __init__ (self, txtRawPath, outputCSVPath, columnNames, metadataJSON):
         self.txtRawPath = txtRawPath
@@ -34,8 +43,7 @@ class overlayMetadataToCSV:
         def flattenList(listToFlatten):
             flatList = []
 
-            #recursion
-            def flatten(sublist):
+            def flatten(sublist): #recursion
                 for item in sublist:
                     if isinstance(item, type(list)):flatten(item)
                     else: flatList.append(item)

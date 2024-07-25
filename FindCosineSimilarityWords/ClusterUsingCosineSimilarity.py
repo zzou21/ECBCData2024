@@ -19,13 +19,13 @@ class findConeOfWordsCommonKeywordDefinition:
         self.keywordJSON = keywordJSON # A path JSON file containing the keyword and the sentence it appears in
         self.model = model # MacBERTh
         self.tokenizer = tokenizer # MacBERTh tokenizer
-        self.storageJSON = storageJSON
-        self.returnTopWordsCount = returnTopWordsCount
-        self.specificFilesToAnalyze = specificFilesToAnalyze
+        self.storageJSON = storageJSON #JSON that stores the calculation outputs
+        self.returnTopWordsCount = returnTopWordsCount #Amount of top similar words that the user wants to return
+        self.specificFilesToAnalyze = specificFilesToAnalyze #JSON containing the names of files to process
         self.batchWorkflowControl = batchWorkflowControl
-        self.longSentenceCounter = 0 
+        self.longSentenceCounter = 0 #Counts how many sentences in a file that are longer than 1900 characters. Deprecated instance variable.
         self.selectedKeywordsToUse = {} #This dictionary holds which specific parts of the keywordJSON that the user wants to use in finding cosine similarity words.
-        self.keywordsUsed = []
+        self.keywordsUsed = [] #Keeps track of all the categories/keywords that we are calculating similarities to.
         self.fileProcessCounter = 0 #This is to keep track of how many files have been processed while the program is running
         
     def processMainContent(self, contentPath):
@@ -34,14 +34,8 @@ class findConeOfWordsCommonKeywordDefinition:
         contentText = contentText.replace("\n", " ")
         tokenizedSentences = nltk.tokenize.sent_tokenize(contentText)
         tokenizedSentences = [sentence.strip() for sentence in tokenizedSentences if len(sentence.strip()) >= 30] # clear sentences that are too short to the point that it was mistakening tokenized or the tokenizer caught onto something uncessary.
-        self.longSentenceCounter += sum(1 for sentence in tokenizedSentences if len(sentence) > 1900)
+        # self.longSentenceCounter += sum(1 for sentence in tokenizedSentences if len(sentence) > 1900) #Deprecated functionality
         return tokenizedSentences
-    
-    # def checkIfSentenceContainsAnyKeywords(self, sentence): #This function is used to optimize the program so we only need to embed the sentences that contain the keywords.
-    #     for word in self.keywordsUsed:
-    #         if word in sentence:
-    #             return True
-    #     return False
     
     def processEmbeddingMainContent(self, contentPath):
         wordEmbeddingsList = []
@@ -177,8 +171,7 @@ class findConeOfWordsCommonKeywordDefinition:
                         self.workflowControl(resultDictionary)
                         resultDictionary.clear()
 
-                else:
-                    print(f"No files match the designated list of file names: {fileName[:-4]}")
+                else: print(f"No files match the designated list of file names: {fileName[:-4]}")
         self.workflowControl(resultDictionary)
     
     def workflowControl(self, resultDictionary):

@@ -7,19 +7,18 @@ This repository stores the final version of the code used by Duke University's 2
 # Folder Documentation:
 
 ## AuxiliaryPrograms:
-
 This folder contains useful preparatory and experimental codes. These programs are the selected few that are helpful to preserve for reference.
-* ### PtMac_Bible
-  * #### data
+### PtMac_Bible
+#### data
     * _Bible_full_text.txt_: contains the entirety of the Geneva Bible in TXT format.
     * _genevaBible.csv_: contains the entirety of the Geneva Bible labeled with Book and Verse numbers.
     * _CSscore.ipynb_: uses the fine-tuned / default MacBERTh to compute the cosine similarity between two words.
     * _TextifyBible.ipynb_: turns the Bible in CSV format into a TXT file.
     * _pretrainMac.ipynb_: pretrains MacBERTh on Geneva Bible.
-  * #### TFIDFKMeans: this folder contains practice code that performs TF-IDF to create word clusters. This folder was used in the early stage of this project to experiment with TF-IDF and K-Means methods.
+#### TFIDFKMeans: this folder contains practice code that performs TF-IDF to create word clusters. This folder was used in the early stage of this project to experiment with TF-IDF and K-Means methods.
     * _KMeansResults.json_: output of TFIDFmethod1WithClustering.ipynb
     * _TFIDFmethod1WithClustering.ipynb_: using TfidfVectorizer to create the top TF-IDF results for each file in a folder.
-  * #### TextProcessing:
+ #### TextProcessing:
     * _PracticeCosineSimilarity.ipynb_: this program performs cosine similarity calculation based on TF-IDF. This program intended for testing and experimentation purposes is an early-stage program using cosine similarity. It assumes the TF-IDF results as the keywords to perform cosine similarity calculation.
     * _AllTestFunctions.py_: this file functions as a notepad where we store the smaller pieces of auxiliary programs. For example, the program in it selects the EEBO texts published between 1606 and 1625.
 
@@ -30,7 +29,7 @@ This folder contains useful preparatory and experimental codes. These programs a
 * _standardizedwords.json_: The 2023 Data+ Ethical Consumption Before Capitalism team built this list. This is a list of unstandardized word spellings paired with their standardized spelling. This file is used during text cleaning.
 * _StoreEmbedding.py_: performs embedding for the words in documents and stores the embedding of all tokens except special tokens
 
-## Bias Identification: This is the most important folder of the Bias Axis Projection workflow.
+## Bias Identification: this is the most important folder of the Bias Axis Projection workflow.
 * _Bias_Identification_Base.py_: digitize the bias axes, and project a particular keyword on a set of bias axes predetermined via close reading; compute this for all files in a particular folder.
 * _BiasList_Interface.ipynb_: an interface that updates a set of categorized words.
 * _Project_All_Words.py_: attempts to project all words of a document onto a particular bias axis and use the median of all projections to represent the entire text; did not end up using but this could be a meaningful breakthrough to study.
@@ -39,13 +38,13 @@ This folder contains useful preparatory and experimental codes. These programs a
 * _projectionTXTtoCSV.py_: this tool transforms the Bias Axes Projection outputs (in the form of a TXT file) into a CSV file for easy processing. The TXT file is the output of Bias_Identification_Base.py, whose output format can be found in the TXT files in the data folder in the root directory.
 
 ## FindCosineSimilarityWords:
-* IFIDFWordsCosSim: this sub-folder contains the cosine similarity word search program using TF-IDF outputs from the 2023 Data+ team. The main program is stored in
+### IFIDFWordsCosSim: this sub-folder contains the cosine similarity word search program using TF-IDF outputs from the 2023 Data+ team. The main program is stored in
   * _TFIDFCosSimSearch.py_, and TFIDFWordBank.json contains the TF-IDF words from 2023.
-* decodeCosSimOutput: This sub-folder contains the customizable process to analyze the cosine similarity outputs.
+### decodeCosSimOutput: This sub-folder contains the customizable process to analyze the cosine similarity outputs.
   * _RollingUpdatesOutputs.json_: this contains some cosine similarity outputs from individual documents.
   * _decodeCosSimResults.py_: this is an important functionality-based Python class object that could: 1) perform standard decoding to turn cosine similarity outputs into more readable formats; 2) perform network analysis-intended decoding that finds the frequency and location (or the cosine similarity category and text) of appearance for each word in the corpus; 3) provide customizable decode methods that users could build themselves to better fit their programs. This file also contains a workflow control mechanism to prevent using up too much device memory and a text metadata search mechanism.
   * _outputCosSimReadable.json_: this JSON is the output of the standard decoding function in the Python class object in the decodeCosSimResults.py file.
-* _600Files.json_: this contains the file serial number of all EEBO-TCP texts published between 1525-1639.
+* _600Files.json_: this contains the file serial number of all EEBO-TCP texts published between 1525 and 1639.
 * _80VAFiles.json_: this contains the Virginia or colonization and conversion-related EEBO-TCP files identified by the 2023 Data+ team.
 * _AccessMetadata.py_: this program contains a Python class object that finds the metadata of a text using its serial number in the format of “A00001.”
 * _ClusterUsingCosineSimilarity.py_: this is the main cosine similarity word search algorithm. It takes in a directory of files and searches for the top N most similar words in each file according to the “keywordJSONPath,” a JSON that stores the category terms and their respective context sentences. Then, the result is outputted into a JSON that should then be decoded and analyzed using the decodeCosSimResults.py program under the decodeCosSimOutput sub-folder.

@@ -39,7 +39,7 @@ This is the most important folder of the Bias Axis Projection workflow.
 * _projectionTXTtoCSV.py_: this tool transforms the Bias Axes Projection outputs (in the form of a TXT file) into a CSV file for easy processing. The TXT file is the output of Bias_Identification_Base.py, whose output format can be found in the TXT files in the data folder in the root directory.
 
 ## FindCosineSimilarityWords:
-### IFIDFWordsCosSim:
+### TFIDFWordsCosSim:
 This sub-folder contains the cosine similarity word search program using TF-IDF outputs from the 2023 Data+ team. The main program is stored in
   * _TFIDFCosSimSearch.py_, and TFIDFWordBank.json contains the TF-IDF words from 2023.
 ### decodeCosSimOutput:
@@ -66,13 +66,13 @@ This sub-folder contains the customizable process to analyze the cosine similari
 * _puncRestore.py_: takes in the EP (Early Print) documents stored on the DCC folder called dedication_text_EPcorpus_1590-1639 and adds punctuation to them
 
 ## XMLProcessingAndTraining:
-This folder contains the code that traverses EEBO-TCP to handle document metadata and build the relevant Python architecture and fine-tune MacBERTh for the EEBO-Geneva Bible connection.
+This folder contains the code that traverses EEBO-TCP to handle document metadata and builds the relevant Python architecture and fine-tune MacBERTh for the EEBO-Geneva Bible connection.
 ### AuxiliaryXMLProcessing
 * _ReadXMLwithoutTags.py_: this program reads the XML files that EEBO-TCP raw texts were originally stored in.
 ### ManuscriptMetadata
 * _DocumentMetadata.json_: all metadata of EEBO-TCP texts (author, title, publication year, publisher, publication city) stored as uncleaned information in a JSON.
 * _FindSpecificMetadata.py_: this program finds the metadata of EEBO-TCP texts as specified by the user. The result (or the metadata of the selected texts) is stored in a JSON file.
-* _FindingDocumentMetadata.py_: this program traverses through the file names of EEBO-TCP files (where file names are all labeled using serial numbers) and finds the metadata of each text. This is designed to match serial numbers with metadata.
+* _FindingDocumentMetadata.py_: this program traverses the file names of EEBO-TCP files (where file names are all labeled using serial numbers) and finds the metadata of each text. This is designed to match serial numbers with metadata.
 * _OperateMetadata.py_: this is an extensive Python class object that cleans the DocumentMetadata.json’s uncleaned metadata, resulting in cleanedDocumentMetadata.json. This program makes the document metadata easier to traverse and implement in users’ own programs.
 * _SpecificMetadata.json_: storage JSON from FindSpecificMetadata.py.
 * _cleanedDocumentMetadata.json_: this JSON is the cleaned version of DocumentMetadata.json

@@ -1,4 +1,4 @@
-'''This program searches throuhg the metadata JSON and selects the metadata of files that the user needs and stores that in another JSON file.
+'''This program searches through the metadata JSON and selects the metadata of files that the user needs and stores that in another JSON file.
 
 Author: Jerry Zou'''
 import json, csv, sys, os

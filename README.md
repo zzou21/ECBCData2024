@@ -85,7 +85,7 @@ This folder contains the code that traverses EEBO-TCP to handle document metadat
 * _TrainMacBERThRecognitionBible.py_: this program trains the default MacBERTh on the Geneva Bible.
 * _XMLCitationTags.json_: this JSON contains the specific XML tags that the user wants to extract content from
 * _XMLJsonAccessTool.py_: this program is designed to traverse the dictionary structure of StoringItalicsAndLineNumber.json for quick access to information.
-* _XMLParseVizTests.ipynb): this Jupyter Notebook file was used to test methods of how to approach the data gathered in filteredXMLBibleRef.json. In other words, this Notebook contains our attempts to analyze Biblical reference data.
+* _XMLParseVizTests.ipynb_: this Jupyter Notebook file was used to test methods of how to approach the data gathered in filteredXMLBibleRef.json. In other words, this Notebook contains our attempts to analyze Biblical reference data.
 * _XMLtagCollectorInterface.py_: this is a user interface that allows the user to update what types of XML tags they wish to analyze. User inputs are stored in XMLCitationTags.json.
 
 ## Shiny:

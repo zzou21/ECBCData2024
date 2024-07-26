@@ -16,22 +16,22 @@ This folder contains useful preparatory and experimental codes. These programs a
     * _CSscore.ipynb_: makes use of the fine-tuned / default MacBERTh to compute the cosine similarity between two words.
     * _TextifyBible.ipynb_: turns the Bible in CSV format into a TXT file.
     * _pretrainMac.ipynb_: pretrains MacBERTh on Geneva Bible.
-  * #### TFIDFKMeans: This folder contains practice code that performs TF-IDF to create word clusters. This folder was used in the early stage of this project to experiment with TF-IDF and K-Means methods.
-KMeansResults.json: output of TFIDFmethod1WithClustering.ipynb
-TFIDFmethod1WithClustering.ipynb: using TfidfVectorizer to create the top TF-IDF results for each file in a folder.
-TextProcessing:
-PracticeCosineSimilarity.ipynb: this program performs cosine similarity calculation based on TF-IDF. This program intended for testing and experimentation purposes is an early-stage program using cosine similarity. It assumes the TF-IDF results as the keywords to perform cosine similarity calculation.
-AllTestFunctions.py: this file functions as a notepad where we store the smaller pieces of auxiliary programs. For example, the program in it selects the EEBO texts published between 1606 and 1625.
+  * #### TFIDFKMeans: this folder contains practice code that performs TF-IDF to create word clusters. This folder was used in the early stage of this project to experiment with TF-IDF and K-Means methods.
+    * _KMeansResults.json_: output of TFIDFmethod1WithClustering.ipynb
+    * _TFIDFmethod1WithClustering.ipynb_: using TfidfVectorizer to create the top TF-IDF results for each file in a folder.
+  * #### TextProcessing:
+    * _PracticeCosineSimilarity.ipynb_: this program performs cosine similarity calculation based on TF-IDF. This program intended for testing and experimentation purposes is an early-stage program using cosine similarity. It assumes the TF-IDF results as the keywords to perform cosine similarity calculation.
+    * _AllTestFunctions.py_: this file functions as a notepad where we store the smaller pieces of auxiliary programs. For example, the program in it selects the EEBO texts published between 1606 and 1625.
 
-BaseWordSelection
-accessEmbeddingStorageCalculation.py: This program accesses a JSON that stores the embedding coordinates of individual words in a document (intended to be the concatenation of all documents in a corpus). Such a JSON makes the cosine similarity and other calculation processes faster, as the program doesn’t have to embed all words every time the program is executed.
-BaseGen.py: generates base words based on a set of categories given; did not end up using but upon proper change, can be very useful.
-TopBasewordForCate.py: generates base words based on a particular category. This has been useful.
-standardizedwords.json: The 2023 Data+ Ethical Consumption Before Capitalism team built this list. This is a list of unstandardized word spellings paired with their standardized spelling. This file is used during text cleaning. 
-StoreEmbedding.py: performs embedding for the words in documents and stores the embedding of all tokens except special tokens
+## BaseWordSelection:
+* _accessEmbeddingStorageCalculation.py_: This program accesses a JSON that stores the embedding coordinates of individual words in a document (intended to be the concatenation of all documents in a corpus). Such a JSON makes the cosine similarity and other calculation processes faster, as the program doesn’t have to embed all words every time the program is executed.
+* _BaseGen.py_: generates base words based on a set of categories given; did not end up using but upon proper change, can be very useful.
+* _TopBasewordForCate.py_: generates base words based on a particular category. This has been useful.
+* _standardizedwords.json_: The 2023 Data+ Ethical Consumption Before Capitalism team built this list. This is a list of unstandardized word spellings paired with their standardized spelling. This file is used during text cleaning.
+* _StoreEmbedding.py_: performs embedding for the words in documents and stores the embedding of all tokens except special tokens
 
-Bias Identification: This is the most important folder of the Bias Axis Projection workflow.
-Bias_Identification_Base.py: digitize the bias axes, and project a particular keyword on a set of bias axes predetermined via close reading; compute this for all files in a particular folder.
+## Bias Identification: This is the most important folder of the Bias Axis Projection workflow.
+* _Bias_Identification_Base.py_: digitize the bias axes, and project a particular keyword on a set of bias axes predetermined via close reading; compute this for all files in a particular folder.
 BiasList_Interface.ipynb: an interface that is used to update a set of categorized words.
 Project_All_Words.py: attempts to project all words of a document onto a particular bias axis and use the median of all projections to represent the entire text; did not end up using but this could be a meaningful breakthrough to study.
 

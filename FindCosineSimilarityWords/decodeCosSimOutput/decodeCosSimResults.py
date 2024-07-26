@@ -102,19 +102,26 @@ class decodeCosSimOutput:
 
         counter = 0
         mostAppearingWord = []
+        edgesCounterPerCategory = {}
         for returnedWord, appearance in appearanceDictionary.items():
             # print(returnedWord, appearance)
-            if len(appearance) >= 10 and len(set(manuscriptList[0] for category, manuscriptList in appearance.items())) : # This searches for words that appeared in more than X categories. The second conditional checks the number of manuscripts that the words appeared in.
-                print(returnedWord, len(appearance))
-                mostAppearingWord.append((returnedWord, len(appearance)))
-                counter +=1
-                # for category, file in appearance.items():
-                #     if len(file) > 1:
-                #         for fileNum in file:
+            if len(appearance) >= 2 and len(set(manuscriptList[0] for category, manuscriptList in appearance.items())) >= 2 : # This searches for words that appeared in more than X categories. The second conditional checks the number of manuscripts that the words appeared in.
+                # mostAppearingWord.append((returnedWord, len(appearance))) #This is to update the most appearing words list that would be later on used for sorting.
+                # counter +=1
+                if "christ" in appearance:
+                    counter += 1
+                
+                for category, file in appearance.items():
+                    if category not in edgesCounterPerCategory:
+                        edgesCounterPerCategory[category] = 0
+                    edgesCounterPerCategory[category] += 1
 
-                            # # metadataList = self.accessMetadata(fileNum)
+                    if len(file) > 1:
+                        for fileNum in file:
 
-                            # counter += 1
+                            # metadataList = self.accessMetadata(fileNum)
+
+                            counter += 1
 
                             # if metadataList[1] and metadataList[2]:
                             #     textInfo = fileNum + ";" + metadataList[0][0][:-10] + ";" + metadataList[1][0] + ";" + str(metadataList[2][0])
@@ -122,12 +129,12 @@ class decodeCosSimOutput:
                             #     counter +=1 
                             # else:
                             #     print(returnedWord, "|", category, "|", fileNum)
-                                # counter +=1 
+                            #     counter +=1 
 
-                    # else:
+                    else:
 
-                    #     # metadataList = self.accessMetadata(file[0])
-                    #     counter +=1
+                        # metadataList = self.accessMetadata(file[0])
+                        counter +=1
 
                         # if metadataList[1] and metadataList[2]:
                         #     textInfo = file + ";" + metadataList[0][0][:-10] + ";" + metadataList[1][0] + ";" + str(metadataList[2][0])
@@ -137,11 +144,13 @@ class decodeCosSimOutput:
                         #     print(returnedWord, "|", category, "|", file, "Anonymous")
                         #     counter += 1
 
-                # print(returnedWord, len(appearance))
-                # print(returnedWord, appearance)
+                print(returnedWord, len(appearance))
+                print(returnedWord, appearance)
+                
         print(counter)
-        mostAppearingWord = sorted(mostAppearingWord, key = lambda x: x[1], reverse=True)
-        print(f"Most appearing word: {mostAppearingWord}")
+        print(edgesCounterPerCategory)
+        # mostAppearingWord = sorted(mostAppearingWord, key = lambda x: x[1], reverse=True)
+        # print(f"Most appearing word: {mostAppearingWord}")
 
     def specialDecodeA(self): # This special decode function is used to test decoding one document within the dictionary at a time. Customize code as needed.
         decodedDictionary = {}

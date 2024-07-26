@@ -9,14 +9,14 @@ This repository stores the final version of the code used by Duke University's 2
 ## AuxiliaryPrograms:
 
 This folder contains useful preparatory and experimental codes. These programs are the selected few that we believe are helpful to preserve for reference.
-* PtMac_Bible
-  * data
-    * Bible_full_text.txt: contains the entirety of the Geneva Bible in TXT format.
-genevaBible.csv: contains the entirety of the Geneva Bible labeled with Book and Verse numbers.
-CSscore.ipynb: makes use of the fine-tuned / default MacBERTh to compute the cosine similarity between two words.
-TextifyBible.ipynb: turns the Bible in CSV format into a TXT file.
-pretrainMac.ipynb: pretrains MacBERTh on Geneva Bible. 
-TFIDFKMeans: This folder contains practice code that performs TF-IDF to create word clusters. This folder was used in the early stage of this project to experiment with TF-IDF and K-Means methods.
+* ### PtMac_Bible
+  * #### data
+    * _Bible_full_text.txt_: contains the entirety of the Geneva Bible in TXT format.
+    * _genevaBible.csv_: contains the entirety of the Geneva Bible labeled with Book and Verse numbers.
+    * _CSscore.ipynb_: makes use of the fine-tuned / default MacBERTh to compute the cosine similarity between two words.
+    * _TextifyBible.ipynb_: turns the Bible in CSV format into a TXT file.
+    * _pretrainMac.ipynb_: pretrains MacBERTh on Geneva Bible.
+  * #### TFIDFKMeans: This folder contains practice code that performs TF-IDF to create word clusters. This folder was used in the early stage of this project to experiment with TF-IDF and K-Means methods.
 KMeansResults.json: output of TFIDFmethod1WithClustering.ipynb
 TFIDFmethod1WithClustering.ipynb: using TfidfVectorizer to create the top TF-IDF results for each file in a folder.
 TextProcessing:

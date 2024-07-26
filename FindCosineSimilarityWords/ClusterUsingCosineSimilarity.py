@@ -197,7 +197,7 @@ if __name__ == "__main__":
     folderPath = "/Users/Jerry/Desktop/TXTFolder" #folder path to a folder that holds numerous TXT files to be scanned. Use either filePath or folderPath, not both.
     keywordJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/testShortKeywordSentence.json" #path to JSON file that stores the baseword and the contexual sentences.
     storageJSONPath = "/Users/Jerry/Desktop/testSetCountingOutput.json" #path to JSON file that stores the output.
-    specificFilesToAnalyze = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/test.json"
+    specificFilesToAnalyze = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/test.json" # you have to build another JSON file that lists the names of the files in the "folderPath" of which you wish to process.
     returnTopWordsCount = 40 # Number of output cosine similarity words you'd like to see.
     batchWorkflowControl = 2 # This is the workflow control methodology so that, when processing large amount of files, it won't be storing this number of files in the computer memory.
 

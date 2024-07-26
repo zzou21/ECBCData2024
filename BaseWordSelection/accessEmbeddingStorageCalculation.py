@@ -1,3 +1,7 @@
+'''This program assumes that the user has stored all the word embedding coordinates (vectors) into a JSON file for faster computation. This program, instead of embedding the content of the corpus each time the user runs analysis, will directly access the stored embedding.
+
+Author: Jerry Zou'''
+
 import numpy as np, json, torch, heapq
 from transformers import AutoTokenizer, AutoModel
 

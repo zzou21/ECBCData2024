@@ -1,7 +1,3 @@
-'''TO DO:
-- How to grab the context of a Bible citation in XML.
-- How to grab the Biblical citation position? (Which book, chapter, verse is being cited, etc).'''
-
 '''This file is the main body of the multi-file Bible-non-Bible verse comparison machine program. It extracts potential Biblical references/citations from EEBO's XML files and store them in a JSON. Then, it calls on an external Python class object that drives the fine-tuned MacBERTh comparison machine to compare which verse was in the Geneva Bible and store the results in a separate JSON file.
 
 Files to track:

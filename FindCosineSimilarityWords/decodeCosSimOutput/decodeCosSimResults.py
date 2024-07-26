@@ -174,7 +174,7 @@ class decodeCosSimOutput:
         
 
 if __name__ == "__main__":
-    inputJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/combined300FilesOutput.json"
+    inputJSONPath = "/Users/Jerry/Desktop/combined300FilesOutput.json"
     auxiliaryJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/temporaryOutputforRepatedWords.json" #This does not do anything unless specified by adding customized code.
     metadataJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/XMLProcessingAndTraining/ManuscriptMetadata/cleanedDocumentMetadata.json"
     outputJSONPath = "/Users/Jerry/Desktop/Data+2024/Data+2024Code/ECBCData2024/FindCosineSimilarityWords/decodeCosSimOutput/output8SermonsReadable.json"

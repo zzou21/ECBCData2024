@@ -1,14 +1,13 @@
-# ECBCData2024
+# Early Consumption Before Capitalism (ECBC) 2024 Data+ 
 
 This repository stores the final version of the code used by Duke University's 2024 Data+ "Ethical Consumption before Capitalism" research team. The team's goal is to innovatively combine historical and computational methodologies to study the linguistic choices made by writers within or related to the Virginia Company of London. We especially focus on the historical context of English discussions around the religious conversion of the Native American communities. This project is built on top of the important work done by past years' Data+ and Bass Connections teams.
 
 2024 project website: [https://sites.duke.edu/ecbc2024/](https://sites.duke.edu/ecbc2024/)
 
-# Folders description
----
+# Folder Description:
 
 ## AuxiliaryPrograms:
----
+
 This folder contains useful preparatory and experimental codes. These programs are the selected few that we believe are helpful to preserve for reference.
 * PtMac_Bible
 * * data

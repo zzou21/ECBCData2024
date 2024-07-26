@@ -4,10 +4,10 @@ This repository stores the final version of the code used by Duke University's 2
 
 2024 project website: [https://sites.duke.edu/ecbc2024/](https://sites.duke.edu/ecbc2024/)
 
-#Folders description
+# Folders description
 ---
 
-##AuxiliaryPrograms:
+## AuxiliaryPrograms:
 ---
 This folder contains useful preparatory and experimental codes. These programs are the selected few that we believe are helpful to preserve for reference.
 * PtMac_Bible

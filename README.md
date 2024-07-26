@@ -10,7 +10,7 @@ This repository stores the final version of the code used by Duke University's 2
 
 This folder contains useful preparatory and experimental codes. These programs are the selected few that we believe are helpful to preserve for reference.
 * PtMac_Bible
-** data
+  * data
 * Bible_full_text.txt: contains the entirety of the Geneva Bible in TXT format.
 genevaBible.csv: contains the entirety of the Geneva Bible labeled with Book and Verse numbers.
 CSscore.ipynb: makes use of the fine-tuned / default MacBERTh to compute the cosine similarity between two words.

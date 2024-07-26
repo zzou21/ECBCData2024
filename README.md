@@ -77,17 +77,17 @@ This folder contains the code that traverses EEBO-TCP to handle document metadat
 * _turnFileNamesIntoList.py_: this auxiliary program turns a TXT that contains a list of file names into machine-readable JSON.
 ### TurnXMLtoTXT:
 * _BibleVerseDetectionTrainingImplementationPythonClassObject.py_: this program calls on our fine-tuned MacBERTh model trained on the Geneva Bible to determine whether an inputted sentence was a Bible verse or not.
-filteredXMLBibleRef.json: this JSON stores the content of StoringItalicsAndLineNumber.json that has been filtered by out fine-tuned MacBERTh to be a Geneva Bible verse.
-IDandFilterVersesMain.py: This master program combines the many different functions of our Python architecture. It traverses through the XML files, selects the content from specific XML labels, stores them, performs filtering of the stored information according to the specific needs of each user, and other functionalities that the user needs.
-StoringItalicsAndLineNumber.json: this JSON stores all words in EEBO that has been labeled as italics by the XML tags. This JSON could store the content of whichever XML label that a user wants to extract.
-TrainMacBERThRecognitionBible.py: This program trains the default MacBERTh on the Geneva Bible.
-XMLCitationTags.json: This JSON contains the specific XML tags that the user wants to extract content from
-XMLJsonAccessTool.py: this program is designed to traverse the dictionary structure of StoringItalicsAndLineNumber.json for quick access to information.
-XMLParseVizTests.ipynb: this Jupyter Notebook file was used to test methods of how to approach the data gathered in filteredXMLBibleRef.json. In other words, this Notebook contains our attempts to analyze Biblical reference data.
-XMLtagCollectorInterface.py: this is a user interface that allows the user to update what types of XML tags they wish to analyze. User inputs are stored in XMLCitationTags.json.
+* _filteredXMLBibleRef.json_: this JSON stores the content of StoringItalicsAndLineNumber.json that has been filtered by our fine-tuned MacBERTh to be a Geneva Bible verse.
+* _IDandFilterVersesMain.py_: this master program combines the many different functions of our Python architecture. It traverses through the XML files, selects the content from specific XML labels, stores them, performs filtering of the stored information according to the specific needs of each user, and other functionalities that the user needs.
+* _StoringItalicsAndLineNumber.json_: this JSON stores all words in EEBO that have been labeled as italics by the XML tags. This JSON could store the content of whichever XML label that a user wants to extract.
+* _TrainMacBERThRecognitionBible.py_: this program trains the default MacBERTh on the Geneva Bible.
+* _XMLCitationTags.json_: this JSON contains the specific XML tags that the user wants to extract content from
+* _XMLJsonAccessTool.py_: this program is designed to traverse the dictionary structure of StoringItalicsAndLineNumber.json for quick access to information.
+* _XMLParseVizTests.ipynb): this Jupyter Notebook file was used to test methods of how to approach the data gathered in filteredXMLBibleRef.json. In other words, this Notebook contains our attempts to analyze Biblical reference data.
+* _XMLtagCollectorInterface.py_: this is a user interface that allows the user to update what types of XML tags they wish to analyze. User inputs are stored in XMLCitationTags.json.
 
-Shiny
-data: the file names are simplified for easy access. [1.csv = projecting Virginia on G1] [2.csv = projecting Virginia on G2] [3.csv = projecting Native on G2] [4.csv = projecting Native on G3]
-modules: contains modules to be called by the main app.R for creating visualizations
-app.R: a R Shiny App that creates interactive plots for distribution (clustering) and line graphs (time-series)
+## Shiny:
+* _data_: the file names are simplified for easy access. [1.csv = projecting Virginia on G1] [2.csv = projecting Virginia on G2] [3.csv = projecting Native on G2] [4.csv = projecting Native on G3]
+* _modules_: contains modules to be called by the main app.R for creating visualizations
+* _app.R_: an R Shiny App that creates interactive plots for distribution (clustering) and line graphs (time-series)
 

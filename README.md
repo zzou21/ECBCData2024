@@ -15,7 +15,8 @@ This folder contains useful preparatory and experimental codes. These programs a
  * _CSscore.ipynb_: uses the fine-tuned / default MacBERTh to compute the cosine similarity between two words.
  * _TextifyBible.ipynb_: turns the Bible in CSV format into a TXT file.
  * _pretrainMac.ipynb_: pretrains MacBERTh on Geneva Bible.
-### TFIDFKMeans: this folder contains practice code that performs TF-IDF to create word clusters. This folder was used in the early stage of this project to experiment with TF-IDF and K-Means methods.
+### TFIDFKMeans:
+This folder contains practice code that performs TF-IDF to create word clusters. This folder was used in the early stage of this project to experiment with TF-IDF and K-Means methods.
  * _KMeansResults.json_: output of TFIDFmethod1WithClustering.ipynb
  * _TFIDFmethod1WithClustering.ipynb_: using TfidfVectorizer to create the top TF-IDF results for each file in a folder.
 ### TextProcessing:
@@ -29,7 +30,8 @@ This folder contains useful preparatory and experimental codes. These programs a
 * _standardizedwords.json_: The 2023 Data+ Ethical Consumption Before Capitalism team built this list. This is a list of unstandardized word spellings paired with their standardized spelling. This file is used during text cleaning.
 * _StoreEmbedding.py_: performs embedding for the words in documents and stores the embedding of all tokens except special tokens
 
-## Bias Identification: this is the most important folder of the Bias Axis Projection workflow.
+## Bias Identification:
+This is the most important folder of the Bias Axis Projection workflow.
 * _Bias_Identification_Base.py_: digitize the bias axes, and project a particular keyword on a set of bias axes predetermined via close reading; compute this for all files in a particular folder.
 * _BiasList_Interface.ipynb_: an interface that updates a set of categorized words.
 * _Project_All_Words.py_: attempts to project all words of a document onto a particular bias axis and use the median of all projections to represent the entire text; did not end up using but this could be a meaningful breakthrough to study.
@@ -38,9 +40,11 @@ This folder contains useful preparatory and experimental codes. These programs a
 * _projectionTXTtoCSV.py_: this tool transforms the Bias Axes Projection outputs (in the form of a TXT file) into a CSV file for easy processing. The TXT file is the output of Bias_Identification_Base.py, whose output format can be found in the TXT files in the data folder in the root directory.
 
 ## FindCosineSimilarityWords:
-### IFIDFWordsCosSim: this sub-folder contains the cosine similarity word search program using TF-IDF outputs from the 2023 Data+ team. The main program is stored in
+### IFIDFWordsCosSim:
+This sub-folder contains the cosine similarity word search program using TF-IDF outputs from the 2023 Data+ team. The main program is stored in
   * _TFIDFCosSimSearch.py_, and TFIDFWordBank.json contains the TF-IDF words from 2023.
-### decodeCosSimOutput: This sub-folder contains the customizable process to analyze the cosine similarity outputs.
+### decodeCosSimOutput:
+This sub-folder contains the customizable process to analyze the cosine similarity outputs.
   * _RollingUpdatesOutputs.json_: this contains some cosine similarity outputs from individual documents.
   * _decodeCosSimResults.py_: this is an important functionality-based Python class object that could: 1) perform standard decoding to turn cosine similarity outputs into more readable formats; 2) perform network analysis-intended decoding that finds the frequency and location (or the cosine similarity category and text) of appearance for each word in the corpus; 3) provide customizable decode methods that users could build themselves to better fit their programs. This file also contains a workflow control mechanism to prevent using up too much device memory and a text metadata search mechanism.
   * _outputCosSimReadable.json_: this JSON is the output of the standard decoding function in the Python class object in the decodeCosSimResults.py file.
@@ -89,4 +93,4 @@ This folder contains the code that traverses EEBO-TCP to handle document metadat
 * _data_: the file names are simplified for easy access. [1.csv = projecting Virginia on G1] [2.csv = projecting Virginia on G2] [3.csv = projecting Native on G2] [4.csv = projecting Native on G3]
 * _modules_: contains modules to be called by the main app.R for creating visualizations
 * _app.R_: an R Shiny App that creates interactive plots for distribution (clustering) and line graphs (time-series)
-
+---

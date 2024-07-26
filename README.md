@@ -15,10 +15,10 @@ This folder contains useful preparatory and experimental codes. These programs a
     * _CSscore.ipynb_: uses the fine-tuned / default MacBERTh to compute the cosine similarity between two words.
     * _TextifyBible.ipynb_: turns the Bible in CSV format into a TXT file.
     * _pretrainMac.ipynb_: pretrains MacBERTh on Geneva Bible.
-#### TFIDFKMeans: this folder contains practice code that performs TF-IDF to create word clusters. This folder was used in the early stage of this project to experiment with TF-IDF and K-Means methods.
+### TFIDFKMeans: this folder contains practice code that performs TF-IDF to create word clusters. This folder was used in the early stage of this project to experiment with TF-IDF and K-Means methods.
     * _KMeansResults.json_: output of TFIDFmethod1WithClustering.ipynb
     * _TFIDFmethod1WithClustering.ipynb_: using TfidfVectorizer to create the top TF-IDF results for each file in a folder.
- #### TextProcessing:
+### TextProcessing:
     * _PracticeCosineSimilarity.ipynb_: this program performs cosine similarity calculation based on TF-IDF. This program intended for testing and experimentation purposes is an early-stage program using cosine similarity. It assumes the TF-IDF results as the keywords to perform cosine similarity calculation.
     * _AllTestFunctions.py_: this file functions as a notepad where we store the smaller pieces of auxiliary programs. For example, the program in it selects the EEBO texts published between 1606 and 1625.
 
